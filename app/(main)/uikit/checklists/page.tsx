@@ -18,6 +18,8 @@ import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useState } from 'react';
 import type { Demo } from '../../../../types/types';
+import axios from 'axios';
+import { apiUrls } from '../../constants/constants';
 
 const TableDemo = () => {
     const [customers1, setCustomers1] = useState<Demo.Customer[]>([]);
@@ -31,6 +33,7 @@ const TableDemo = () => {
     const [globalFilterValue1, setGlobalFilterValue1] = useState('');
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
+    const [checklists, setChecklists] = useState<Demo.Customer[]>([]);
 
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -50,6 +53,45 @@ const TableDemo = () => {
     const clearFilter1 = () => {
         initFilters1();
     };
+
+
+    
+    const dynamicColumns = [
+        { field: 'title', header: 'Name' },
+        { field: 'category', header: 'Category' },
+        { field: 'description', header: 'Description' },
+        { field: 'status', header: 'Status' },
+        
+    ];
+
+    const columns = dynamicColumns.map((col) => (
+        <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+        />
+    ));
+
+    useEffect(() => {
+        const fetchChecklistData = async () => {
+          try {
+            const response = await axios.get(`https://m365-health-api-dev.azurewebsites.net${apiUrls.tenants}`);
+            console.log('Request URL:', `https://m365-health-api-dev.azurewebsites.net${apiUrls.tenants}`);
+            console.log('Response:', response.data);
+    
+            if (response.status === 200) {
+              setChecklists(response.data);
+            } else {
+              console.error('Error fetching data:', response);
+            }
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        };
+    
+        // Call the async function
+        fetchChecklistData();
+      }, []);
 
     const onGlobalFilterChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -365,7 +407,7 @@ const TableDemo = () => {
                 <div className="card">
                     <h5>Filter Menu</h5>
                     <DataTable
-                        value={customers1}
+                        value={checklists}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -378,82 +420,7 @@ const TableDemo = () => {
                         emptyMessage="No customers found."
                         header={header1}
                     >
-                        <Column field="name" header="Name" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
-                        <Column header="Country" filterField="country.name" style={{ minWidth: '12rem' }} body={countryBodyTemplate} filter filterPlaceholder="Search by country" filterClear={filterClearTemplate} filterApply={filterApplyTemplate} />
-                        <Column
-                            header="Agent"
-                            filterField="representative"
-                            showFilterMatchModes={false}
-                            filterMenuStyle={{ width: '14rem' }}
-                            style={{ minWidth: '14rem' }}
-                            body={representativeBodyTemplate}
-                            filter
-                            filterElement={representativeFilterTemplate}
-                        />
-                        <Column header="Date" filterField="date" dataType="date" style={{ minWidth: '10rem' }} body={dateBodyTemplate} filter filterElement={dateFilterTemplate} />
-                        <Column header="Balance" filterField="balance" dataType="numeric" style={{ minWidth: '10rem' }} body={balanceBodyTemplate} filter filterElement={balanceFilterTemplate} />
-                        <Column field="status" header="Status" filterMenuStyle={{ width: '14rem' }} style={{ minWidth: '12rem' }} body={statusBodyTemplate} filter filterElement={statusFilterTemplate} />
-                        <Column field="activity" header="Activity" showFilterMatchModes={false} style={{ minWidth: '12rem' }} body={activityBodyTemplate} filter filterElement={activityFilterTemplate} />
-                        <Column field="verified" header="Verified" dataType="boolean" bodyClassName="text-center" style={{ minWidth: '8rem' }} body={verifiedBodyTemplate} filter filterElement={verifiedFilterTemplate} />
-                    </DataTable>
-                </div>
-            </div>
-
-            <div className="col-12">
-                <div className="card">
-                    <h5>Frozen Columns</h5>
-                    <ToggleButton checked={idFrozen} onChange={(e) => setIdFrozen(e.value)} onIcon="pi pi-lock" offIcon="pi pi-lock-open" onLabel="Unfreeze Id" offLabel="Freeze Id" style={{ width: '10rem' }} />
-
-                    <DataTable value={customers2} scrollable scrollHeight="400px" loading={loading2} className="mt-3">
-                        <Column field="name" header="Name" style={{ flexGrow: 1, flexBasis: '160px' }} frozen className="font-bold"></Column>
-                        <Column field="id" header="Id" style={{ flexGrow: 1, flexBasis: '100px' }} frozen={idFrozen} alignFrozen="left" bodyClassName={classNames({ 'font-bold': idFrozen })}></Column>
-                        <Column field="country.name" header="Country" style={{ flexGrow: 1, flexBasis: '200px' }} body={countryBodyTemplate}></Column>
-                        <Column field="date" header="Date" style={{ flexGrow: 1, flexBasis: '200px' }} body={dateBodyTemplate}></Column>
-                        <Column field="company" header="Company" style={{ flexGrow: 1, flexBasis: '200px' }}></Column>
-                        <Column field="status" header="Status" style={{ flexGrow: 1, flexBasis: '200px' }} body={statusBodyTemplate}></Column>
-                        <Column field="activity" header="Activity" style={{ flexGrow: 1, flexBasis: '200px' }}></Column>
-                        <Column field="representative.name" header="Representative" style={{ flexGrow: 1, flexBasis: '200px' }} body={representativeBodyTemplate}></Column>
-                        <Column field="balance" header="Balance" body={balanceTemplate} frozen style={{ flexGrow: 1, flexBasis: '120px' }} className="font-bold" alignFrozen="right"></Column>
-                    </DataTable>
-                </div>
-            </div>
-
-            <div className="col-12">
-                <div className="card">
-                    <h5>Row Expand</h5>
-                    <DataTable value={products} expandedRows={expandedRows} onRowToggle={(e) => setExpandedRows(e.data)} responsiveLayout="scroll" rowExpansionTemplate={rowExpansionTemplate} dataKey="id" header={header}>
-                        <Column expander style={{ width: '3em' }} />
-                        <Column field="name" header="Name" sortable />
-                        <Column header="Image" body={imageBodyTemplate} />
-                        <Column field="price" header="Price" sortable body={priceBodyTemplate} />
-                        <Column field="category" header="Category" sortable />
-                        <Column field="rating" header="Reviews" sortable body={ratingBodyTemplate} />
-                        <Column field="inventoryStatus" header="Status" sortable body={statusBodyTemplate2} />
-                    </DataTable>
-                </div>
-            </div>
-
-            <div className="col-12">
-                <div className="card">
-                    <h5>Subheader Grouping</h5>
-                    <DataTable
-                        value={customers3}
-                        rowGroupMode="subheader"
-                        groupRowsBy="representative.name"
-                        sortMode="single"
-                        sortField="representative.name"
-                        sortOrder={1}
-                        scrollable
-                        scrollHeight="400px"
-                        rowGroupHeaderTemplate={headerTemplate}
-                        rowGroupFooterTemplate={footerTemplate}
-                        responsiveLayout="scroll"
-                    >
-                        <Column field="name" header="Name" style={{ minWidth: '200px' }}></Column>
-                        <Column field="country" header="Country" body={countryBodyTemplate} style={{ minWidth: '200px' }}></Column>
-                        <Column field="company" header="Company" style={{ minWidth: '200px' }}></Column>
-                        <Column field="status" header="Status" body={statusBodyTemplate} style={{ minWidth: '200px' }}></Column>
-                        <Column field="date" header="Date" style={{ minWidth: '200px' }}></Column>
+                        {columns}
                     </DataTable>
                 </div>
             </div>

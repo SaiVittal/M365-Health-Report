@@ -152,6 +152,8 @@ declare namespace Demo {
 
     //CustomerService
     type Customer = {
+        partnerRelationships: any;
+        partnerRelationships: any;
         id?: number;
         name?: string;
         country?: ICountryObject;

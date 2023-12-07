@@ -368,7 +368,7 @@ const Dashboard = () => {
                         </li>
                     </ul>
                 </div>
-                <div
+                {/* <div
                     className="px-4 py-5 shadow-2 flex flex-column md:flex-row md:align-items-center justify-content-between mb-3"
                     style={{
                         borderRadius: '1rem',
@@ -381,10 +381,10 @@ const Dashboard = () => {
                     </div>
                     <div className="mt-4 mr-auto md:mt-0 md:mr-0">
                         <Link href="https://blocks.primereact.org" className="p-button font-bold px-5 py-3 p-button-warning p-button-rounded p-button-raised">
-                            Get Started
+                            GetStarted
                         </Link>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

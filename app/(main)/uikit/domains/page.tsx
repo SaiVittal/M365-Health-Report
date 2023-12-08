@@ -18,9 +18,15 @@ import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useState } from 'react';
 import type { Demo } from '../../../../types/types';
+import axios from 'axios';
+import { apiUrls } from '../../constants/constants';
+import TenantSwitchDialog from '../../tenantSwitchDialog';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const TableDemo = () => {
     const [customers1, setCustomers1] = useState<Demo.Customer[]>([]);
+    const [domains, setDomains] = useState<Demo.Customer[]>([]);
     const [customers2, setCustomers2] = useState<Demo.Customer[]>([]);
     const [customers3, setCustomers3] = useState<Demo.Customer[]>([]);
     const [filters1, setFilters1] = useState<DataTableFilterMeta>({});
@@ -31,6 +37,9 @@ const TableDemo = () => {
     const [globalFilterValue1, setGlobalFilterValue1] = useState('');
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+    const [selectedTenantName, setSelectedTenantName] = useState<string | null>(null);
 
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -50,6 +59,20 @@ const TableDemo = () => {
     const clearFilter1 = () => {
         initFilters1();
     };
+
+    const mapBooleanToString = (value: any) => {
+        return value ? 'Yes' : 'No';
+    };
+
+    const dynamicColumns = [
+        { field: 'domainName', header: 'Domain Name' },
+        { field: 'isVerified', header: 'Is verified' },
+        { field: 'isSPFValid', header: 'Is SPF valid' },
+        { field: 'isDmarcValid', header: 'Is DMARC valid' },
+        { field: 'isDkimValid', header: 'Is DKIM valid' }
+    ];
+
+    const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} body={col.field !== 'domainName' ? (rowData) => mapBooleanToString(rowData[col.field]) : undefined} />);
 
     const onGlobalFilterChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -88,6 +111,30 @@ const TableDemo = () => {
 
         initFilters1();
     }, []);
+
+    useEffect(() => {
+        const fetchDomains = async () => {
+            try {
+                const response = await axios.get(`${apiBaseUrl}${apiUrls.domains}${selectedTenantId}
+            `);
+                console.log(
+                    'Request URL2Dataa:',
+                    `${apiBaseUrl}${apiUrls.domains}${selectedTenantId}
+            `
+                );
+                console.log('Response:', response.data);
+
+                if (response.status === 200) {
+                    setDomains(response.data);
+                } else {
+                    console.error('Error fetching data:', response);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        fetchDomains();
+    }, [selectedTenantId]);
 
     const balanceTemplate = (rowData: Demo.Customer) => {
         return (
@@ -363,9 +410,17 @@ const TableDemo = () => {
         <div className="grid">
             <div className="col-12">
                 <div className="card">
-                    <h5>Filter Menu</h5>
+                    <div style={{ justifyContent: 'space-between', display: 'flex' }}>
+                        <h5>Domains</h5>
+                        <Button onClick={() => setDialogVisible(true)}>
+                            {' '}
+                            <i className="pi pi-arrow-right-arrow-left"></i>
+                            <span>&nbsp;&nbsp;&nbsp;{selectedTenantName}</span>
+                        </Button>
+                    </div>
+
                     <DataTable
-                        value={customers1}
+                        value={domains}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -378,14 +433,10 @@ const TableDemo = () => {
                         emptyMessage="No customers found."
                         header={header1}
                     >
-                        <Column field="domainName" header="Domain Name" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
-                        <Column field="domainName" header="Status" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
-                        <Column field="domainName" header="Is Verified" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
-                        <Column field="domainName" header="Is SPF Valid" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
-                        <Column field="domainName" header="Is DMK Valid" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
-                        <Column field="domainName" header="Is DMarc Valid" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
-                        {/* <Column header="Status" field="status" style={{ minWidth: '12rem' }} body={countryBodyTemplate} filter filterPlaceholder="Search by country" filterClear={filterClearTemplate} filterApply={filterApplyTemplate} /> */}
+                        {columns}
                     </DataTable>
+
+                    <TenantSwitchDialog visible={dialogVisible} onSelectIDTenant={(tenantId) => setSelectedTenantId(tenantId)} onSelectTenant={(tenantName) => setSelectedTenantName(tenantName)} onHide={() => setDialogVisible(false)} />
                 </div>
             </div>
         </div>

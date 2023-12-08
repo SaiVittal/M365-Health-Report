@@ -51,6 +51,21 @@ const TableDemo = () => {
         initFilters1();
     };
 
+
+    const dynamicColumns = [
+        { field: 'name', header: 'Name' },
+        { field: 'availableLicenses', header: 'Available Licenses' },
+        { field: 'assignedLicenses', header: 'Assigned Licenses' },
+    ];
+
+    const columns = dynamicColumns.map((col) => (
+        <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+        />
+    ));
+
     const onGlobalFilterChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         let _filters1 = { ...filters1 };
@@ -363,7 +378,7 @@ const TableDemo = () => {
         <div className="grid">
             <div className="col-12">
                 <div className="card">
-                    <h5>Filter Menu</h5>
+                    <h5>Subscriptions</h5>
                     <DataTable
                         value={customers1}
                         paginator

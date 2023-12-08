@@ -21,7 +21,7 @@ import type { Demo } from '../../../../types/types';
 import axios from "axios";
 import { apiUrls } from '../../constants/constants';
 
-//const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const TableDemo = () => {
     const [customers1, setCustomers1] = useState<Demo.Customer[]>([]);
@@ -122,13 +122,17 @@ const TableDemo = () => {
 
         initFilters1();
     }, []);
+
+
+    console.log("Base Url", apiBaseUrl);
+    console.log(`${apiBaseUrl}${apiUrls.tenants}`,"Main Url")
     
 
     useEffect(() => {
         const fetchTenants = async () => {
           try {
-            const response = await axios.get(`https://m365-health-api-dev.azurewebsites.net${apiUrls.tenants}`);
-            console.log('Request URL:', `https://m365-health-api-dev.azurewebsites.net${apiUrls.tenants}`);
+            const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
             console.log('Response:', response.data);
     
             if (response.status === 200) {

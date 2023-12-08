@@ -1,8 +1,8 @@
 
 export const apiUrls = {
     tenants: "/api/M365Tenant",
-    domains: "/api/domains",
-    checklists: "/api/CheckListResult/CheckListResults",
-    subscriptions: "/api/subscriptions",
+    domains: "/api/CheckListResult/Domains?tenantId=",
+    checklists: "/api/CheckListResult/CheckListResults?tenantid=",
+    //subscriptions: "/api/subscriptions",
 };
   

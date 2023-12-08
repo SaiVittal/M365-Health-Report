@@ -18,27 +18,24 @@ import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useState } from 'react';
 import type { Demo } from '../../../../types/types';
-import axios from 'axios';
+import axios from "axios";
 import { apiUrls } from '../../constants/constants';
-import TenantSwitchDialog from '../../tenantSwitchDialog';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const TableDemo = () => {
     const [customers1, setCustomers1] = useState<Demo.Customer[]>([]);
     const [customers2, setCustomers2] = useState<Demo.Customer[]>([]);
     const [customers3, setCustomers3] = useState<Demo.Customer[]>([]);
     const [filters1, setFilters1] = useState<DataTableFilterMeta>({});
-    const [loading1, setLoading1] = useState(true);
+    const [loading1, setLoading1] = useState(true); 
     const [loading2, setLoading2] = useState(true);
     const [idFrozen, setIdFrozen] = useState(false);
     const [products, setProducts] = useState<Demo.Product[]>([]);
     const [globalFilterValue1, setGlobalFilterValue1] = useState('');
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
-    const [checklists, setChecklists] = useState<Demo.Customer[]>([]);
-    const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
-    const [selectedTenantName, setSelectedTenantName] = useState<string | null>(null);
-    const [dialogVisible, setDialogVisible] = useState(false);
+    const [tenants, setTenants] = useState<Demo.Customer[]>([]);
 
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -55,45 +52,36 @@ const TableDemo = () => {
 
     const statuses = ['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal'];
 
+
+
+    
+    const partnerRelationshipsBodyTemplate = (rowData: Demo.Customer) => {
+        if (Array.isArray(rowData.partnerRelationships)) {   
+            return rowData.partnerRelationships.join(', ');
+        }
+        return rowData.partnerRelationships;
+    };
+
+
+    const dynamicColumns = [
+        { field: 'userName', header: 'User Name' },
+        { field: 'upn', header: 'UPN' },
+        { field: 'lastLoginInteractive', header: 'Last Login Interactive' },
+        { field: 'lastLoginNonInteractive', header: 'Last Login Non Interactive' },
+    ];
+
+    const columns = dynamicColumns.map((col) => (
+        <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+        />
+    ));
+
+
     const clearFilter1 = () => {
         initFilters1();
     };
-
-    const dynamicColumns = [
-        { field: 'title', header: 'Title' },
-        { field: 'category', header: 'Type' },
-        { field: 'description', header: 'Description' },
-        { field: 'status', header: 'Status' },
-        { field: 'severity', header: 'Severity' }
-    ];
-
-    const mapStatusToString = (status: number) => {
-        return status === 0 ? 'Negative' : 'Positive';
-    };
-
-    const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} body={col.field === 'status' ? (rowData) => mapStatusToString(rowData[col.field]) : undefined} />);
-
-    useEffect(() => {
-        const fetchChecklistData = async () => {
-            try {
-                const response = await axios.get(`${apiBaseUrl}${apiUrls.checklists}${selectedTenantId}
-            `);
-                console.log('Request URL Data:', `${apiBaseUrl}${apiUrls.checklists}${selectedTenantId}`);
-                console.log('ResponseData:', response.data);
-
-                if (response.status === 200) {
-                    setChecklists(response.data);
-                } else {
-                    console.error('Error fetching data:', response);
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-        fetchChecklistData();
-    }, [selectedTenantId]);
-
-    console.log('ChecklistData', checklists);
 
     const onGlobalFilterChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -132,6 +120,32 @@ const TableDemo = () => {
 
         initFilters1();
     }, []);
+    
+
+    // useEffect(() => {
+    //     const fetchTenants = async () => {
+    //       try {
+    //         const response = await axios.get(`https://m365-health-api-dev.azurewebsites.net${apiUrls.tenants}`);
+    //         console.log('Request URL:', `https://m365-health-api-dev.azurewebsites.net${apiUrls.tenants}`);
+    //         console.log('Response:', response.data);
+    
+    //         if (response.status === 200) {
+    //           setTenants(response.data);
+    //         } else {
+    //           console.error('Error fetching data:', response);
+    //         }
+    //       } catch (error) {
+    //         console.error('Error fetching data:', error);
+    //       }
+    //     };
+    
+    //     // Call the async function
+    //     fetchTenants();
+    //   }, []);
+
+
+      console.log("Tenants Data", tenants);
+
 
     const balanceTemplate = (rowData: Demo.Customer) => {
         return (
@@ -407,15 +421,9 @@ const TableDemo = () => {
         <div className="grid">
             <div className="col-12">
                 <div className="card">
-                    <div style={{ justifyContent: 'space-between', display: 'flex' }}>
-                        <h5>Checklist Summary</h5>
-                        <Button onClick={() => setDialogVisible(true)} style={{marginBottom:'15px'}}>
-                            <i className="pi pi-arrow-right-arrow-left"></i>
-                            <span>&nbsp;&nbsp;&nbsp;{selectedTenantName}</span>
-                        </Button>
-                    </div>
+                    <h5>Inactive Users with Licenses</h5>
                     <DataTable
-                        value={checklists}
+                        value={tenants}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -430,8 +438,6 @@ const TableDemo = () => {
                     >
                         {columns}
                     </DataTable>
-
-                    <TenantSwitchDialog visible={dialogVisible} onSelectIDTenant={(tenantId) => setSelectedTenantId(tenantId)} onSelectTenant={(tenantName) => setSelectedTenantName(tenantName)} onHide={() => setDialogVisible(false)} />
                 </div>
             </div>
         </div>

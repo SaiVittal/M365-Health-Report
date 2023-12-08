@@ -11,10 +11,10 @@ const AppMenu = () => {
     const { layoutConfig } = useContext(LayoutContext);
 
     const model: AppMenuItem[] = [
-        {
-            label: 'Home',
-            items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
-        },
+        // {
+        //     label: 'Home',
+        //     items: []
+        // },
         {
             label: '',
             items: [
@@ -23,8 +23,8 @@ const AppMenu = () => {
                 // { label: 'Float Label', icon: 'pi pi-fw pi-bookmark', to: '/uikit/floatlabel' },
                 // { label: 'Invalid State', icon: 'pi pi-fw pi-exclamation-circle', to: '/uikit/invalidstate' },
                 // { label: 'Button', icon: 'pi pi-fw pi-mobile', to: '/uikit/button', class: 'rotated-icon' },
-                 { label: 'Tenants', icon: 'pi pi-fw pi-table', to: '/uikit/tenants' },
-                 { label: 'Subscriptions', icon: 'pi pi-fw pi-table', to: '/uikit/subscriptions' },
+                { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }, 
+                { label: 'Subscriptions', icon: 'pi pi-fw pi-money-bill', to: '/uikit/subscriptions' },
                 // { label: 'List', icon: 'pi pi-fw pi-list', to: '/uikit/list' },
                 // { label: 'Tree', icon: 'pi pi-fw pi-share-alt', to: '/uikit/tree' },
                 // { label: 'Panel', icon: 'pi pi-fw pi-tablet', to: '/uikit/panel' },
@@ -33,44 +33,44 @@ const AppMenu = () => {
                 // { label: 'Menu', icon: 'pi pi-fw pi-bars', to: '/uikit/menu', preventExact: true },
                 // { label: 'Message', icon: 'pi pi-fw pi-comment', to: '/uikit/message' },
                 // { label: 'File', icon: 'pi pi-fw pi-file', to: '/uikit/file' },
-                { label: 'Chart', icon: 'pi pi-fw pi-chart-bar', to: '/uikit/charts' },
-
+                // { label: 'Chart', icon: 'pi pi-fw pi-chart-bar', to: '/uikit/charts' },
                     {
                                 label: 'Checklist',
-                                icon: 'pi pi-fw pi-user',
+                                icon: 'pi pi-fw pi-list',
                                 items: [
                                     {
                                         label: 'Summary',
-                                        icon: 'pi pi-fw pi-sign-in',
+                                        icon: 'pi pi-fw pi-info-circle',
                                         to: '/uikit/checklists'
                                     },
                                     {
                                         label: 'Domains',
-                                        icon: 'pi pi-fw pi-times-circle',
+                                        icon: 'pi pi-fw pi-globe',
                                         to: '/uikit/domains'
                                     },
                                     {
                                         label: 'Inactive Users with License',
-                                        icon: 'pi pi-fw pi-lock',
-                                        to: '/auth/access'
+                                        icon: 'pi pi-fw pi-user-minus',
+                                        to: '/uikit/inactiveuserswithlicenses'
                                     },
                                     {
                                         label: 'Inactive Users Login Enabled',
                                         icon: 'pi pi-fw pi-lock',
-                                        to: '/auth/access'
+                                        to: '/uikit/inactiveusersloginenabled'
                                     }
                                 ]
                             },
                     {
-                        label: 'Reports Menu',
+                        label: 'Admin',
                         icon: 'pi pi-fw pi-user',
                         items: [
                             {
                                 label: 'Checklist Report for all Tenants',
-                                icon: 'pi pi-fw pi-sign-in',
+                                icon: 'pi pi-fw pi-chart-bar',
                                 to: '/uikit/charts'
                                 //to: '/auth/login'
-                            }
+                            },
+                            { label: 'Tenants', icon: 'pi pi-fw pi-users', to: '/uikit/tenants' },
                         ]
                     },
             ]

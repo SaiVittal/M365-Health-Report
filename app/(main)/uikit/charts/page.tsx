@@ -249,7 +249,7 @@ const ChartDemo = () => {
        */}
             <div className="col-12 xl:col-9">
                 <div className="card">
-                    <h5>Bar Chart</h5>
+                    <h5>Checklist Report of All Tenants</h5>
                     <Chart type="bar" data={data.barData} options={options.barOptions}></Chart>
                 </div>
             </div>

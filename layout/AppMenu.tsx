@@ -68,6 +68,7 @@ const AppMenu = () => {
                             {
                                 label: 'Checklist Report for all Tenants',
                                 icon: 'pi pi-fw pi-sign-in',
+                                to: '/uikit/charts'
                                 //to: '/auth/login'
                             }
                         ]

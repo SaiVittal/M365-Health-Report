@@ -57,10 +57,11 @@ const TableDemo = () => {
 
     
     const dynamicColumns = [
-        { field: 'title', header: 'Name' },
-        { field: 'category', header: 'Category' },
-        { field: 'description', header: 'Description' },
-        { field: 'status', header: 'Status' },
+        { field: 'title', header: 'Title' },
+        { field: 'category', header: 'Type' },
+        { field: 'description', header: 'Status' },
+        { field: 'status', header: 'Severity' },
+        { field: 'status', header: 'Last Checked' },
         
     ];
 

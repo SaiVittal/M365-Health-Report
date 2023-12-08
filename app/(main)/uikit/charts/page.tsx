@@ -16,16 +16,16 @@ const ChartDemo = () => {
         const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary') || '#6c757d';
         const surfaceBorder = documentStyle.getPropertyValue('--surface-border') || '#dfe7ef';
         const barData: ChartData = {
-            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+            labels: ['Security Defaults', 'Global Admin Accounts', 'MFA on All Users', 'DNS Records Domains', 'AD Sync Errors', 'Email Standard Protection', 'Alerts Configured'],
             datasets: [
                 {
-                    label: 'My First dataset',
+                    label: 'Yes',
                     backgroundColor: documentStyle.getPropertyValue('--primary-500') || '#6366f1',
                     borderColor: documentStyle.getPropertyValue('--primary-500') || '#6366f1',
                     data: [65, 59, 80, 81, 56, 55, 40]
                 },
                 {
-                    label: 'My Second dataset',
+                    label: 'No',
                     backgroundColor: documentStyle.getPropertyValue('--primary-200') || '#bcbdf9',
                     borderColor: documentStyle.getPropertyValue('--primary-200') || '#bcbdf9',
                     data: [28, 48, 40, 19, 86, 27, 90]
@@ -240,42 +240,43 @@ const ChartDemo = () => {
 
     return (
         <div className="grid p-fluid">
-            <div className="col-12 xl:col-6">
+            {/* <div className="col-12 xl:col-6"> 
                 <div className="card">
                     <h5>Linear Chart</h5>
                     <Chart type="line" data={data.lineData} options={options.lineOptions}></Chart>
-                </div>
+                </div>  
             </div>
-            <div className="col-12 xl:col-6">
+       */}
+            <div className="col-12 xl:col-9">
                 <div className="card">
                     <h5>Bar Chart</h5>
                     <Chart type="bar" data={data.barData} options={options.barOptions}></Chart>
                 </div>
             </div>
-            <div className="col-12 xl:col-6">
+            {/* <div className="col-12 xl:col-6">
                 <div className="card flex flex-column align-items-center">
                     <h5 className="text-left w-full">Pie Chart</h5>
                     <Chart type="pie" data={data.pieData} options={options.pieOptions}></Chart>
                 </div>
-            </div>
-            <div className="col-12 xl:col-6">
+            </div> */}
+            {/* <div className="col-12 xl:col-6">
                 <div className="card flex flex-column align-items-center">
                     <h5 className="text-left w-full">Doughnut Chart</h5>
                     <Chart type="doughnut" data={data.pieData} options={options.pieOptions}></Chart>
                 </div>
-            </div>
-            <div className="col-12 xl:col-6">
+            </div> */}
+            {/* <div className="col-12 xl:col-6">
                 <div className="card flex flex-column align-items-center">
                     <h5 className="text-left w-full">Polar Area Chart</h5>
                     <Chart type="polarArea" data={data.polarData} options={options.polarOptions}></Chart>
                 </div>
-            </div>
-            <div className="col-12 xl:col-6">
+            </div> */}
+            {/* <div className="col-12 xl:col-6">
                 <div className="card flex flex-column align-items-center">
                     <h5 className="text-left w-full">Radar Chart</h5>
                     <Chart type="radar" data={data.radarData} options={options.radarOptions}></Chart>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

@@ -130,33 +130,33 @@ const Dashboard = () => {
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
-                            <span className="block text-500 font-medium mb-3">Orders</span>
+                            <span className="block text-500 font-medium mb-3">Active Users</span>
                             <div className="text-900 font-medium text-xl">152</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        {/* <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-shopping-cart text-blue-500 text-xl" />
-                        </div>
+                        </div> */}
                     </div>
-                    <span className="text-green-500 font-medium">24 new </span>
-                    <span className="text-500">since last visit</span>
+                    {/* <span className="text-green-500 font-medium">24 new </span>
+                    <span className="text-500">since last visit</span> */}
                 </div>
             </div>
             <div className="col-12 lg:col-6 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
-                            <span className="block text-500 font-medium mb-3">Revenue</span>
-                            <div className="text-900 font-medium text-xl">$2.100</div>
+                            <span className="block text-500 font-medium mb-3">In-Active Users</span>
+                            <div className="text-900 font-medium text-xl">160</div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-orange-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                        {/* <div className="flex align-items-center justify-content-center bg-orange-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                             <i className="pi pi-map-marker text-orange-500 text-xl" />
-                        </div>
+                        </div> */}
                     </div>
-                    <span className="text-green-500 font-medium">%52+ </span>
-                    <span className="text-500">since last week</span>
+                    {/* <span className="text-green-500 font-medium">%52+ </span>
+                    <span className="text-500">since last week</span> */}
                 </div>
             </div>
-            <div className="col-12 lg:col-6 xl:col-3">
+            {/* <div className="col-12 lg:col-6 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
@@ -170,8 +170,8 @@ const Dashboard = () => {
                     <span className="text-green-500 font-medium">520 </span>
                     <span className="text-500">newly registered</span>
                 </div>
-            </div>
-            <div className="col-12 lg:col-6 xl:col-3">
+            </div> */}
+            {/* <div className="col-12 lg:col-6 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
@@ -185,9 +185,9 @@ const Dashboard = () => {
                     <span className="text-green-500 font-medium">85 </span>
                     <span className="text-500">responded</span>
                 </div>
-            </div>
+            </div> */}
 
-            <div className="col-12 xl:col-6">
+            {/* <div className="col-12 xl:col-6">
                 <div className="card">
                     <h5>Recent Sales</h5>
                     <DataTable value={products} rows={5} paginator responsiveLayout="scroll">
@@ -295,15 +295,15 @@ const Dashboard = () => {
                         </li>
                     </ul>
                 </div>
-            </div>
+            </div> */}
 
-            <div className="col-12 xl:col-6">
+            <div className="col-12 xl:col-10">
                 <div className="card">
-                    <h5>Sales Overview</h5>
+                    <h5>Chart Analysis</h5>
                     <Chart type="line" data={lineData} options={lineOptions} />
                 </div>
 
-                <div className="card">
+                {/* <div className="card">
                     <div className="flex align-items-center justify-content-between mb-4">
                         <h5>Notifications</h5>
                         <div>
@@ -367,7 +367,7 @@ const Dashboard = () => {
                             </span>
                         </li>
                     </ul>
-                </div>
+                </div> */}
                 {/* <div
                     className="px-4 py-5 shadow-2 flex flex-column md:flex-row md:align-items-center justify-content-between mb-3"
                     style={{

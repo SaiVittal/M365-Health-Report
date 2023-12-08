@@ -379,7 +379,12 @@ const TableDemo = () => {
                         header={header1}
                     >
                         <Column field="domainName" header="Domain Name" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
-                        <Column header="Status" field="status" style={{ minWidth: '12rem' }} body={countryBodyTemplate} filter filterPlaceholder="Search by country" filterClear={filterClearTemplate} filterApply={filterApplyTemplate} />
+                        <Column field="domainName" header="Status" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
+                        <Column field="domainName" header="Is Verified" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
+                        <Column field="domainName" header="Is SPF Valid" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
+                        <Column field="domainName" header="Is DMK Valid" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
+                        <Column field="domainName" header="Is DMarc Valid" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
+                        {/* <Column header="Status" field="status" style={{ minWidth: '12rem' }} body={countryBodyTemplate} filter filterPlaceholder="Search by country" filterClear={filterClearTemplate} filterApply={filterApplyTemplate} /> */}
                     </DataTable>
                 </div>
             </div>

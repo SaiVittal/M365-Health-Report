@@ -379,8 +379,10 @@ const TableDemo = () => {
                         header={header1}
                     >
                         <Column field="name" header="Name" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
-                        <Column header="Available Licenses" field="availableLicenses" style={{ minWidth: '12rem' }} body={countryBodyTemplate} filter filterPlaceholder="Search by country" filterClear={filterClearTemplate} filterApply={filterApplyTemplate} />
-                        <Column
+                        <Column field="name" header="Available Licenses" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
+                        <Column field="name" header="Assigned Licenses" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
+                        {/* <Column header="Available Licenses" field="availableLicenses" style={{ minWidth: '12rem' }} body={countryBodyTemplate} filter filterPlaceholder="Search by country" filterClear={filterClearTemplate} filterApply={filterApplyTemplate} /> */}
+                        {/* <Column
                             header="Assigned Licenses"
                             field="tenantName"
                             showFilterMatchModes={false}
@@ -389,7 +391,7 @@ const TableDemo = () => {
                             body={representativeBodyTemplate}
                             filter
                             filterElement={representativeFilterTemplate}
-                        />
+                        /> */}
                     </DataTable>
                 </div>
             </div>

@@ -20,6 +20,7 @@ import React, { useEffect, useState } from 'react';
 import type { Demo } from '../../../../types/types';
 import axios from "axios";
 import { apiUrls } from '../../constants/constants';
+import TenantSwitchDialog from '../../tenantSwitchDialog';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -35,7 +36,12 @@ const TableDemo = () => {
     const [globalFilterValue1, setGlobalFilterValue1] = useState('');
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
-    const [tenants, setTenants] = useState<Demo.Customer[]>([]);
+    const [inactiveUsersLicenses, setInactiveUsersLicenses] = useState<Demo.Customer[]>([]);
+    const [defaultTenantId, setDefaultTenantId]= useState('');
+    const [defaultTenantName, setDefaultTenantName]= useState('');
+    const [selectedTenantId, setSelectedTenantId] = useState<string | null>(defaultTenantId);
+    const [selectedTenantName, setSelectedTenantName] = useState<string | null>(defaultTenantName);
+    const [dialogVisible, setDialogVisible] = useState(false);
 
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -53,21 +59,21 @@ const TableDemo = () => {
     const statuses = ['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal'];
 
 
-
-    
-    const partnerRelationshipsBodyTemplate = (rowData: Demo.Customer) => {
-        if (Array.isArray(rowData.partnerRelationships)) {   
-            return rowData.partnerRelationships.join(', ');
-        }
-        return rowData.partnerRelationships;
-    };
+    // const licenseDetailsBodyTemplate = (rowData: Demo.Customer) => {
+    //     if (Array.isArray(rowData.licenseDetails)) {   
+    //         return rowData.licenseDetails.join(', ');
+    //     }
+    //     return rowData.licenseDetails;
+    // };
 
 
     const dynamicColumns = [
-        { field: 'userName', header: 'User Name' },
-        { field: 'upn', header: 'UPN' },
-        { field: 'lastLoginInteractive', header: 'Last Login Interactive' },
-        { field: 'lastLoginNonInteractive', header: 'Last Login Non Interactive' },
+        { field: 'userID', header: 'User ID' },
+        { field: 'displayName', header: 'Display Name' },
+        { field: 'email', header: 'Email' },
+        { field: 'lastInteractiveSignedDateTime', header: 'Last Login Interactive signed date time' },
+        { field: 'lastNonInteractiveSignedDateTime', header: 'Last Non Interactive signed date time' },
+        //{ field: 'licenseDetails', header: 'License Details' },
     ];
 
     const columns = dynamicColumns.map((col) => (
@@ -75,8 +81,15 @@ const TableDemo = () => {
             key={col.field}
             field={col.field}
             header={col.header}
+           //body={col.field === 'licenseDetails' ? licenseDetailsBodyTemplate : undefined}
         />
     ));
+
+    useEffect(() => {
+        if (defaultTenantName && defaultTenantName.trim() !== '') {
+            setSelectedTenantName(defaultTenantName);
+        }
+    }, [defaultTenantName]);
 
 
     const clearFilter1 = () => {
@@ -104,6 +117,14 @@ const TableDemo = () => {
         );
     };
 
+
+    
+    useEffect(() => {
+        if (defaultTenantId && defaultTenantId.trim() !== '') {
+            setSelectedTenantId(defaultTenantId);
+        }
+    }, [defaultTenantId]);
+
     useEffect(() => {
         setLoading2(true);
 
@@ -120,31 +141,56 @@ const TableDemo = () => {
 
         initFilters1();
     }, []);
-    
-
-    // useEffect(() => {
-    //     const fetchTenants = async () => {
-    //       try {
-    //         const response = await axios.get(`https://m365-health-api-dev.azurewebsites.net${apiUrls.tenants}`);
-    //         console.log('Request URL:', `https://m365-health-api-dev.azurewebsites.net${apiUrls.tenants}`);
-    //         console.log('Response:', response.data);
-    
-    //         if (response.status === 200) {
-    //           setTenants(response.data);
-    //         } else {
-    //           console.error('Error fetching data:', response);
-    //         }
-    //       } catch (error) {
-    //         console.error('Error fetching data:', error);
-    //       }
-    //     };
-    
-    //     // Call the async function
-    //     fetchTenants();
-    //   }, []);
 
 
-      console.log("Tenants Data", tenants);
+    
+    useEffect(() => {
+        const fetchTenants = async () => {
+          try {
+            const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Response:', response.data);
+            console.log("0th Tenant", response.data[1].tenantId);
+    
+            if (response.status === 200) {
+              setDefaultTenantId(response.data[1].tenantId);
+              setDefaultTenantName(response.data[1].tenantName);
+            } else {
+              console.error('Error fetching data:', response);
+            }
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        };
+    
+        // Call the async function
+        fetchTenants();
+      }, []);
+    
+
+    useEffect(() => {
+        const fetchInactiveUsersLicenses = async () => {
+          try {
+            const response = await axios.get(`${apiBaseUrl}${apiUrls.inactiveUsersLicenses}${selectedTenantId}`);
+            console.log('Request URL12:', `${apiBaseUrl}${apiUrls.inactiveUsersLicenses}${selectedTenantId}`);
+            console.log('Response1223:', response.data);
+    
+            if (response.status === 200) {
+                setInactiveUsersLicenses(response.data);
+            } else {
+              console.error('Error fetching data:', response);
+            }
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        };
+    
+        // Call the async function
+        fetchInactiveUsersLicenses();
+      }, [selectedTenantId]);
+
+
+      console.log("InactiveData", inactiveUsersLicenses);
 
 
     const balanceTemplate = (rowData: Demo.Customer) => {
@@ -421,9 +467,18 @@ const TableDemo = () => {
         <div className="grid">
             <div className="col-12">
                 <div className="card">
-                    <h5>Inactive Users with Licenses</h5>
+
+                <div style={{ justifyContent: 'space-between', display: 'flex' }}>
+                        <h5>Inactive Users with Licenses</h5>
+                        <Button onClick={() => setDialogVisible(true)}>
+                            {' '}
+                            <i className="pi pi-arrow-right-arrow-left"></i>
+                            <span>&nbsp;&nbsp;&nbsp;{selectedTenantName}</span>
+                        </Button>
+                    </div>
+                    {/* <h5>Inactive Users with Licenses</h5> */}
                     <DataTable
-                        value={tenants}
+                        value={inactiveUsersLicenses}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -438,6 +493,8 @@ const TableDemo = () => {
                     >
                         {columns}
                     </DataTable>
+
+                    <TenantSwitchDialog visible={dialogVisible} onSelectIDTenant={(tenantId) => setSelectedTenantId(tenantId)} onSelectTenant={(tenantName) => setSelectedTenantName(tenantName)} onHide={() => setDialogVisible(false)} />
                 </div>
             </div>
         </div>

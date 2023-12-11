@@ -18,8 +18,9 @@ import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useState } from 'react';
 import type { Demo } from '../../../../types/types';
-import axios from "axios";
+import axios from 'axios';
 import { apiUrls } from '../../constants/constants';
+import TenantSwitchDialog from '../../tenantSwitchDialog';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -28,7 +29,7 @@ const TableDemo = () => {
     const [customers2, setCustomers2] = useState<Demo.Customer[]>([]);
     const [customers3, setCustomers3] = useState<Demo.Customer[]>([]);
     const [filters1, setFilters1] = useState<DataTableFilterMeta>({});
-    const [loading1, setLoading1] = useState(true); 
+    const [loading1, setLoading1] = useState(true);
     const [loading2, setLoading2] = useState(true);
     const [idFrozen, setIdFrozen] = useState(false);
     const [products, setProducts] = useState<Demo.Product[]>([]);
@@ -36,6 +37,12 @@ const TableDemo = () => {
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
     const [tenants, setTenants] = useState<Demo.Customer[]>([]);
+    const [inactiveusersLogin, setInactiveusersLogin] = useState<Demo.Customer[]>([]);
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const [defaultTenantId, setDefaultTenantId]= useState('');
+    const [defaultTenantName, setDefaultTenantName]= useState('');
+    const [selectedTenantId, setSelectedTenantId] = useState<string | null>(defaultTenantId);
+    const [selectedTenantName, setSelectedTenantName] = useState<string | null>(defaultTenantName);
 
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -52,33 +59,22 @@ const TableDemo = () => {
 
     const statuses = ['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal'];
 
-
-
-    
     const partnerRelationshipsBodyTemplate = (rowData: Demo.Customer) => {
-        if (Array.isArray(rowData.partnerRelationships)) {   
+        if (Array.isArray(rowData.partnerRelationships)) {
             return rowData.partnerRelationships.join(', ');
         }
         return rowData.partnerRelationships;
     };
 
-
     const dynamicColumns = [
-        { field: 'userName', header: 'User Name' },
-        { field: 'upn', header: 'UPN' },
-        { field: 'lastLoginInteractive', header: 'Last Login Interactive' },
-        { field: 'lastLoginNonInteractive', header: 'Last Login Non Interactive' },
+        { field: 'userID', header: 'User ID' },
+        { field: 'email', header: 'Email' },
+        { field: 'displayName', header: 'Display Name' },
+        { field: 'lastInteractiveSignedDateTime', header: 'Last Interactive Signed Date Time' },
+        { field: 'lastNonInteractiveSignedDateTime', header: 'Last NonInteractive Signed DateTime' }
     ];
 
-    const columns = dynamicColumns.map((col) => (
-        <Column
-            key={col.field}
-            field={col.field}
-            header={col.header}
-            
-        />
-    ));
-
+    const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} />);
 
     const clearFilter1 = () => {
         initFilters1();
@@ -105,6 +101,20 @@ const TableDemo = () => {
         );
     };
 
+
+    
+    useEffect(() => {
+        if (defaultTenantId && defaultTenantId.trim() !== '') {
+            setSelectedTenantId(defaultTenantId);
+        }
+    }, [defaultTenantId]);
+
+    useEffect(() => {
+        if (defaultTenantName && defaultTenantName.trim() !== '') {
+            setSelectedTenantName(defaultTenantName);
+        }
+    }, [defaultTenantName]);
+
     useEffect(() => {
         setLoading2(true);
 
@@ -121,32 +131,55 @@ const TableDemo = () => {
 
         initFilters1();
     }, []);
+
+
     
-
-    // useEffect(() => {
-    //     const fetchTenants = async () => {
-    //       try {
-    //         const response = await axios.get(`https://m365-health-api-dev.azurewebsites.net${apiUrls.tenants}`);
-    //         console.log('Request URL:', `https://m365-health-api-dev.azurewebsites.net${apiUrls.tenants}`);
-    //         console.log('Response:', response.data);
+    useEffect(() => {
+        const fetchTenants = async () => {
+          try {
+            const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Request URL14:', `${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Response:', response.data);
+            console.log("0th Tenant", response.data[1].tenantId);
     
-    //         if (response.status === 200) {
-    //           setTenants(response.data);
-    //         } else {
-    //           console.error('Error fetching data:', response);
-    //         }
-    //       } catch (error) {
-    //         console.error('Error fetching data:', error);
-    //       }
-    //     };
+            if (response.status === 200) {
+              setDefaultTenantId(response.data[1].tenantId);
+              setDefaultTenantName(response.data[1].tenantName);
+            } else {
+              console.error('Error fetching data:', response);
+            }
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        };
     
-    //     // Call the async function
-    //     fetchTenants();
-    //   }, []);
+        // Call the async function
+        fetchTenants();
+      }, []);
 
+    useEffect(() => {
+        const fetchInactiveUsersLogin = async () => {
+            try {
+                console.log('Fetching inactive users', `${apiBaseUrl}${apiUrls.inactiveUsers}${selectedTenantId}`);
+                const response = await axios.get(`${apiBaseUrl}${apiUrls.inactiveUsers}${selectedTenantId}`);
 
-      console.log("Tenants Data", tenants);
+                console.log('Response:', response.data);
 
+                if (response.status === 200) {
+                    setInactiveusersLogin(response.data);
+                } else {
+                    console.error('Error fetching data:', response);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        // Call the async function
+        fetchInactiveUsersLogin();
+    }, [selectedTenantId]);
+
+    console.log('InactiveUsers Data', inactiveusersLogin);
 
     const balanceTemplate = (rowData: Demo.Customer) => {
         return (
@@ -422,9 +455,16 @@ const TableDemo = () => {
         <div className="grid">
             <div className="col-12">
                 <div className="card">
-                    <h5>Inactive users login enabled</h5>
+                    <div style={{ justifyContent: 'space-between', display: 'flex' }}>
+                        <h5>Inactive Users Login Enabled</h5>
+                        <Button onClick={() => setDialogVisible(true)}>
+                            {' '}
+                            <i className="pi pi-arrow-right-arrow-left"></i>
+                            <span>&nbsp;&nbsp;&nbsp;{selectedTenantName}</span>
+                        </Button>
+                    </div>
                     <DataTable
-                        value={tenants}
+                        value={inactiveusersLogin}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -439,6 +479,8 @@ const TableDemo = () => {
                     >
                         {columns}
                     </DataTable>
+
+                    <TenantSwitchDialog visible={dialogVisible} onSelectIDTenant={(tenantId) => setSelectedTenantId(tenantId)} onSelectTenant={(tenantName) => setSelectedTenantName(tenantName)} onHide={() => setDialogVisible(false)} />
                 </div>
             </div>
         </div>

@@ -57,7 +57,13 @@ const AppMenu = () => {
                                         label: 'Inactive Users Login Enabled',
                                         icon: 'pi pi-fw pi-lock',
                                         to: '/uikit/inactiveusersloginenabled'
-                                    }
+                                    },
+                                    {
+                                        label: 'Global Admins',
+                                        icon: 'pi pi-fw pi-globe',
+                                        to: '/uikit/globalAdmins'
+                                    },
+                                    
                                 ]
                             },
                     {

@@ -23,8 +23,10 @@ import { apiUrls } from '../../constants/constants';
 import TenantSwitchDialog from '../../tenantSwitchDialog';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-const TableDemo = () => {
+
+const GlobalAdminData = () => {
     const [customers1, setCustomers1] = useState<Demo.Customer[]>([]);
+    const [globalAdmins, setGlobalAdmins] = useState<Demo.Customer[]>([]);
     const [customers2, setCustomers2] = useState<Demo.Customer[]>([]);
     const [customers3, setCustomers3] = useState<Demo.Customer[]>([]);
     const [filters1, setFilters1] = useState<DataTableFilterMeta>({});
@@ -35,14 +37,11 @@ const TableDemo = () => {
     const [globalFilterValue1, setGlobalFilterValue1] = useState('');
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
-    const [checklists, setChecklists] = useState<Demo.Customer[]>([]);
+    const [dialogVisible, setDialogVisible] = useState(false);
     const [defaultTenantId, setDefaultTenantId]= useState('');
     const [defaultTenantName, setDefaultTenantName]= useState('');
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(defaultTenantId);
     const [selectedTenantName, setSelectedTenantName] = useState<string | null>(defaultTenantName);
-    const [dialogVisible, setDialogVisible] = useState(false);
-
-
 
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -63,95 +62,22 @@ const TableDemo = () => {
         initFilters1();
     };
 
+    const mapBooleanToString = (value: any) => {
+        const booleanText = value ? 'true' : 'false';
+        const booleanColor = value ? 'green' : 'red'; 
+    
+        return <span style={{ color: booleanColor }}>{booleanText}</span>;
+    };
+    
+
     const dynamicColumns = [
-        { field: 'title', header: 'Title' },
-        { field: 'category', header: 'Type' },
-        { field: 'description', header: 'Description' },
-        { field: 'status', header: 'Status' },
-        { field: 'severity', header: 'Severity' }
+        //{ field: 'users', header: 'Users' },
+        { field: 'count', header: 'Number of Users' },
+        { field: 'hasRequiredCount', header: 'Has Required Count' },
+        { field: 'remarks', header: 'Remarks' },
     ];
 
-    const mapStatusToString = (status: number) => {
-        const statusText = status === 0 ? 'Negative' : 'Positive';
-        const statusColor = status === 0 ? 'red' : 'green'; 
-        return <span style={{ color: statusColor }}>{statusText}</span>;
-    };
-
-    const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} body={col.field === 'status' ? (rowData) => mapStatusToString(rowData[col.field]) : undefined} />);
-
-
-
-    useEffect(() => {
-        if (defaultTenantId && defaultTenantId.trim() !== '') {
-            setSelectedTenantId(defaultTenantId);
-        }
-    }, [defaultTenantId]);
-
-    useEffect(() => {
-        if (defaultTenantName && defaultTenantName.trim() !== '') {
-            setSelectedTenantName(defaultTenantName);
-        }
-    }, [defaultTenantName]);
-
-    useEffect(() => {
-        localStorage.setItem('checklistsData', JSON.stringify(checklists));
-    }, [checklists]);
-
-    
-    useEffect(() => {
-        const storedChecklists = localStorage.getItem('checklistsData');
-        if (storedChecklists) {
-            setChecklists(JSON.parse(storedChecklists));
-        }
-    }, []);
-
-
-    
-    useEffect(() => {
-        const fetchTenants = async () => {
-          try {
-            const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
-            console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
-            console.log('Response:', response.data);
-            console.log("0th Tenant", response.data[0].tenantId);
-    
-            if (response.status === 200) {
-              setDefaultTenantId(response.data[0].tenantId);
-              setDefaultTenantName(response.data[0].tenantName);
-            } else {
-              console.error('Error fetching data:', response);
-            }
-          } catch (error) {
-            console.error('Error fetching data:', error);
-          }
-        };
-    
-        // Call the async function
-        fetchTenants();
-      }, []);
-
-
-    useEffect(() => {
-        const fetchChecklistData = async () => {
-            try {
-                const response = await axios.get(`${apiBaseUrl}${apiUrls.checklists}${selectedTenantId}
-            `);
-                console.log('Request URL Data:', `${apiBaseUrl}${apiUrls.checklists}${selectedTenantId}`);
-                console.log('ResponseData:', response.data);
-
-                if (response.status === 200) {
-                    setChecklists(response.data);
-                } else {
-                    console.error('Error fetching data:', response);
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-        fetchChecklistData();
-    }, [selectedTenantId]);
-
-    console.log('ChecklistData', checklists);
+    const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} body={col.field === 'hasRequiredCount' ? (rowData) => mapBooleanToString(rowData[col.field]) : undefined} />);
 
     const onGlobalFilterChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -161,6 +87,19 @@ const TableDemo = () => {
         setFilters1(_filters1);
         setGlobalFilterValue1(value);
     };
+
+    
+    useEffect(() => {
+        if (defaultTenantId && defaultTenantId.trim() !== '') {
+            setSelectedTenantId(defaultTenantId);
+        }
+    }, [defaultTenantId]);
+        
+    useEffect(() => {
+        if (defaultTenantName && defaultTenantName.trim() !== '') {
+            setSelectedTenantName(defaultTenantName);
+        }
+    }, [defaultTenantName]);
 
     const renderHeader1 = () => {
         return (
@@ -190,6 +129,60 @@ const TableDemo = () => {
 
         initFilters1();
     }, []);
+
+
+    
+    useEffect(() => {
+        const fetchTenants = async () => {
+          try {
+            const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Response:', response.data);
+            console.log("0th Tenant", response.data[0].tenantId);
+            console.log("0th TenantName", response.data[0].tenantName);
+    
+            if (response.status === 200) {
+              setDefaultTenantId(response.data[0].tenantId);
+              setDefaultTenantName(response.data[0].tenantName);
+            } else {
+              console.error('Error fetching data:', response);
+            }
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        };
+    
+        // Call the async function
+        fetchTenants();
+      }, []);
+
+      console.log("DTenant Name", selectedTenantName);
+
+    useEffect(() => {
+        const fetchGlobalAdmins = async () => {
+            setLoading1(true); 
+            try {
+                const response = await axios.get(`${apiBaseUrl}${apiUrls.globalAdmins}${selectedTenantId}`);
+                const responseArray1 = [response];
+                console.log("Resopnse", responseArray1[0].status)
+                if (responseArray1[0].status === 200) {
+                    const responseData = responseArray1[0].data;
+                    console.log("My Data", [responseData]) 
+                    const myData = [responseData]
+                    setGlobalAdmins(myData); 
+                } else {
+                    console.error('Error fetching data. Server responded with:', response.status, response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading1(false); 
+            }
+        };
+    
+        fetchGlobalAdmins();
+    }, [selectedTenantId]);
+    
 
     const balanceTemplate = (rowData: Demo.Customer) => {
         return (
@@ -466,14 +459,16 @@ const TableDemo = () => {
             <div className="col-12">
                 <div className="card">
                     <div style={{ justifyContent: 'space-between', display: 'flex' }}>
-                        <h5>Checklist Summary</h5>
-                        <Button onClick={() => setDialogVisible(true)} style={{marginBottom:'15px'}}>
+                        <h5>Global Admins </h5>
+                        <Button onClick={() => setDialogVisible(true)}>
+                            {' '}
                             <i className="pi pi-arrow-right-arrow-left"></i>
                             <span>&nbsp;&nbsp;&nbsp;{selectedTenantName}</span>
                         </Button>
                     </div>
+
                     <DataTable
-                        value={checklists}
+                        value={globalAdmins}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -496,4 +491,4 @@ const TableDemo = () => {
     );
 };
 
-export default TableDemo;
+export default GlobalAdminData;

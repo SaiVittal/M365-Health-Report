@@ -38,8 +38,10 @@ const TableDemo = () => {
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
     const [dialogVisible, setDialogVisible] = useState(false);
-    const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
-    const [selectedTenantName, setSelectedTenantName] = useState<string | null>(null);
+    const [defaultTenantId, setDefaultTenantId]= useState('');
+    const [defaultTenantName, setDefaultTenantName]= useState('');
+    const [selectedTenantId, setSelectedTenantId] = useState<string | null>(defaultTenantId);
+    const [selectedTenantName, setSelectedTenantName] = useState<string | null>(defaultTenantName);
 
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -61,15 +63,25 @@ const TableDemo = () => {
     };
 
     const mapBooleanToString = (value: any) => {
-        return value ? 'Yes' : 'No';
+        const booleanText = value ? 'Yes' : 'No';
+        const booleanColor = value ? 'green' : 'red'; 
+    
+        return <span style={{ color: booleanColor }}>{booleanText}</span>;
     };
+    
+
+    // const mapStatusToString = (status: number) => {
+    //     const statusText = status === 0 ? 'Negative' : 'Positive';
+    //     const statusColor = status === 0 ? 'red' : 'green'; 
+    //     return <span style={{ color: statusColor }}>{statusText}</span>;
+    // };
 
     const dynamicColumns = [
         { field: 'domainName', header: 'Domain Name' },
-        { field: 'isVerified', header: 'Is verified' },
-        { field: 'isSPFValid', header: 'Is SPF valid' },
-        { field: 'isDmarcValid', header: 'Is DMARC valid' },
-        { field: 'isDkimValid', header: 'Is DKIM valid' }
+        { field: 'isVerified', header: 'Is Verified' },
+        { field: 'isSPFValid', header: 'Is SPF Valid' },
+        { field: 'isDmarcValid', header: 'Is DMARC Valid' },
+        { field: 'isDkimValid', header: 'Is DKIM Valid' }
     ];
 
     const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} body={col.field !== 'domainName' ? (rowData) => mapBooleanToString(rowData[col.field]) : undefined} />);
@@ -82,6 +94,18 @@ const TableDemo = () => {
         setFilters1(_filters1);
         setGlobalFilterValue1(value);
     };
+
+    useEffect(() => {
+        if (defaultTenantId && defaultTenantId.trim() !== '') {
+            setSelectedTenantId(defaultTenantId);
+        }
+    }, [defaultTenantId]);
+
+    useEffect(() => {
+        if (defaultTenantName && defaultTenantName.trim() !== '') {
+            setSelectedTenantName(defaultTenantName);
+        }
+    }, [defaultTenantName]);
 
     const renderHeader1 = () => {
         return (
@@ -111,6 +135,30 @@ const TableDemo = () => {
 
         initFilters1();
     }, []);
+
+
+    useEffect(() => {
+        const fetchTenants = async () => {
+          try {
+            const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Response:', response.data);
+            console.log("0th Tenant", response.data[0].tenantId);
+    
+            if (response.status === 200) {
+              setDefaultTenantId(response.data[0].tenantId);
+              setDefaultTenantName(response.data[0].tenantName);
+            } else {
+              console.error('Error fetching data:', response);
+            }
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        };
+    
+        // Call the async function
+        fetchTenants();
+      }, []);
 
     useEffect(() => {
         const fetchDomains = async () => {

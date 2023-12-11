@@ -69,20 +69,36 @@ const TableDemo = () => {
         { field: 'primaryDomain', header: 'Primary Domain' },
         { field: 'dateOnboarded', header: 'Date On-boarded' },
         { field: 'partnerRelationships', header: 'Partner Relationships' },
+        { field: 'edit', header: 'Edit' },
     ];
+
+    const actionBodyTemplate = (rowData: Demo.Customer) => {
+        return (
+            <React.Fragment>
+                {/* <Button label="" icon="pi pi-user-edit" onClick={() => handleEdit(rowData)} className="p-button-rounded p-button-success" /> */}
+                <i className="pi pi-pencil" onClick={() => handleEdit(rowData)} style={{cursor:'pointer'}}  />
+            </React.Fragment>
+        );
+    };
 
     const columns = dynamicColumns.map((col) => (
         <Column
             key={col.field}
             field={col.field}
             header={col.header}
-            body={col.field === 'partnerRelationships' ? partnerRelationshipsBodyTemplate : undefined}
-        />
+            body={col.field === 'partnerRelationships' ? partnerRelationshipsBodyTemplate : (col.field === 'edit' ? actionBodyTemplate : undefined)}
+            />
     ));
 
 
     const clearFilter1 = () => {
         initFilters1();
+    };
+
+
+
+    const handleEdit = (rowData: Demo.Customer) => {
+        console.log('Edit button clicked for:', rowData);
     };
 
     const onGlobalFilterChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -427,7 +443,12 @@ const TableDemo = () => {
         <div className="grid">
             <div className="col-12">
                 <div className="card">
-                    <h5>Tenants</h5>
+                <div style={{ justifyContent: 'space-between', display: 'flex' }}>
+                        <h5 style ={{marginTop: '10px'}}>Tenants</h5>
+                        <Button style={{marginBottom:'10px'}}>
+                          Add Tenant
+                        </Button>
+                    </div>
                     <DataTable
                         value={tenants}
                         paginator

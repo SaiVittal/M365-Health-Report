@@ -6,6 +6,7 @@ export const apiUrls = {
     globalAdmins: "/api/CheckListResult/GlobalAdmins?tenantId=",
     inactiveUsersLicenses: "/api/CheckListResult/InactiveUsersLicenses?tenantId=",
     inactiveUsers:"/api/CheckListResult/InactiveUsers?tenantId=",
-    //subscriptions: "/api/subscriptions",
+    secureScore: '/api/CheckListResult/SecuritySecores?tenantId=',
+    subscriptions: "/api/CheckListResult/ProductDetails?tenantId=",
 };
   

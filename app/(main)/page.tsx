@@ -11,6 +11,19 @@ import { LayoutContext } from '../../layout/context/layoutcontext';
 import Link from 'next/link';
 import { Demo } from '../../types/types';
 import { ChartData, ChartOptions } from 'chart.js';
+import { apiUrls } from './constants/constants';
+import axios from 'axios';
+import { ProgressBar } from 'primereact/progressbar';
+import { useTenantContext } from './context/page';
+
+interface SecureScoreData {
+    achievedPoints: number;
+    totalPoints: number;
+    currentScore: number;
+    averageScore: number;
+}
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const lineData: ChartData = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -38,8 +51,12 @@ const Dashboard = () => {
     const [products, setProducts] = useState<Demo.Product[]>([]);
     const menu1 = useRef<Menu>(null);
     const menu2 = useRef<Menu>(null);
+    const [secureScoreData, setSecureScoreData] = useState<SecureScoreData | {}>({});
+    const defaultTenantId = '2f47c536-4b94-4845-ad2a-85a1409d2d23';
+    const [selectedTenantId, setSelectedTenantId] = useState<string | null>(defaultTenantId);
     const [lineOptions, setLineOptions] = useState<ChartOptions>({});
     const { layoutConfig } = useContext(LayoutContext);
+    const {myselectedTenantId, myselectedTenantName} = useTenantContext();
 
     const applyLightTheme = () => {
         const lineOptions: ChartOptions = {
@@ -117,6 +134,28 @@ const Dashboard = () => {
         }
     }, [layoutConfig.colorScheme]);
 
+    useEffect(() => {
+        const fetchSecureScore = async () => {
+            try {
+                const response = await axios.get(`${apiBaseUrl}${apiUrls.secureScore}${myselectedTenantId}`);
+                console.log('Request URL:', `${apiBaseUrl}${apiUrls.secureScore}`);
+                console.log('Response:', response.data.currentScore);
+
+                if (response.status === 200) {
+                    const roundedScore = Number(response.data.currentScore.toFixed(2));
+                    setSecureScoreData({ ...response.data, currentScore: roundedScore });
+                } else {
+                    console.error('Error fetching data:', response);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        // Call the async function
+        fetchSecureScore();
+    }, [myselectedTenantId]);
+
     const formatCurrency = (value: number) => {
         return value?.toLocaleString('en-US', {
             style: 'currency',
@@ -126,36 +165,17 @@ const Dashboard = () => {
 
     return (
         <div className="grid">
-            <div className="col-12 lg:col-6 xl:col-3">
-                <div className="card mb-0">
-                    <div className="flex justify-content-between mb-3">
-                        <div>
-                            <span className="block text-500 font-medium mb-3">Active Users</span>
-                            <div className="text-900 font-medium text-xl">152</div>
-                        </div>
-                        {/* <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-shopping-cart text-blue-500 text-xl" />
-                        </div> */}
-                    </div>
-                    {/* <span className="text-green-500 font-medium">24 new </span>
-                    <span className="text-500">since last visit</span> */}
+
+
+{/* {myselectedTenantId && (
+                <div>
+                    <h2>Selected Tenant Information:</h2>
+                    <p>Tenant ID: {myselectedTenantId}</p>
+                    <p>Tenant Name: {myselectedTenantName}</p>
                 </div>
-            </div>
-            <div className="col-12 lg:col-6 xl:col-3">
-                <div className="card mb-0">
-                    <div className="flex justify-content-between mb-3">
-                        <div>
-                            <span className="block text-500 font-medium mb-3">In-Active Users</span>
-                            <div className="text-900 font-medium text-xl">160</div>
-                        </div>
-                        {/* <div className="flex align-items-center justify-content-center bg-orange-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-map-marker text-orange-500 text-xl" />
-                        </div> */}
-                    </div>
-                    {/* <span className="text-green-500 font-medium">%52+ </span>
-                    <span className="text-500">since last week</span> */}
-                </div>
-            </div>
+            )}  */}
+
+
             {/* <div className="col-12 lg:col-6 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
@@ -299,9 +319,61 @@ const Dashboard = () => {
 
             <div className="col-12 xl:col-10">
                 <div className="card">
+                    <h4> Your Secure Score: {(secureScoreData as SecureScoreData).currentScore}%</h4>
+                    <div className="mb-3">
+                        <span>
+                            {(secureScoreData as SecureScoreData).achievedPoints}/{(secureScoreData as SecureScoreData).totalPoints} points achieved
+                        </span>
+                    </div>
+                    <div className="mb-3">
+                        <span>Current Score</span>
+                        <ProgressBar value={(secureScoreData as SecureScoreData).currentScore} displayValueTemplate={(value) => `${value}%`} />
+                    </div>
+                    <div className="mb-3">
+                        <span>Average Score</span>
+                        <ProgressBar value={(secureScoreData as SecureScoreData).averageScore} displayValueTemplate={(value) => `${value}%`} />
+                    </div>
+                </div>
+            </div>
+
+            <div className="col-12 xl:col-10">
+                <div className="card">
                     <h5>Chart Analysis</h5>
                     <Chart type="line" data={lineData} options={lineOptions} />
                 </div>
+
+
+
+                <div className="col-12 lg:col-6 xl:col-3">
+                <div className="card mb-0">
+                    <div className="flex justify-content-between mb-3">
+                        <div>
+                            <span className="block text-500 font-medium mb-3">Active Users</span>
+                            <div className="text-900 font-medium text-xl">152</div>
+                        </div>
+                        {/* <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                            <i className="pi pi-shopping-cart text-blue-500 text-xl" />
+                        </div> */}
+                    </div>
+                    {/* <span className="text-green-500 font-medium">24 new </span>
+                    <span className="text-500">since last visit</span> */}
+                </div>
+            </div>
+            <div className="col-12 lg:col-6 xl:col-3">
+                <div className="card mb-0">
+                    <div className="flex justify-content-between mb-3">
+                        <div>
+                            <span className="block text-500 font-medium mb-3">In-Active Users</span>
+                            <div className="text-900 font-medium text-xl">160</div>
+                        </div>
+                        {/* <div className="flex align-items-center justify-content-center bg-orange-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
+                            <i className="pi pi-map-marker text-orange-500 text-xl" />
+                        </div> */}
+                    </div>
+                    {/* <span className="text-green-500 font-medium">%52+ </span>
+                    <span className="text-500">since last week</span> */}
+                </div>
+            </div>
 
                 {/* <div className="card">
                     <div className="flex align-items-center justify-content-between mb-4">

@@ -21,6 +21,7 @@ import type { Demo } from '../../../../types/types';
 import axios from 'axios';
 import { apiUrls } from '../../constants/constants';
 import TenantSwitchDialog from '../../tenantSwitchDialog';
+import { useTenantContext } from '../../context/page';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 const TableDemo = () => {
@@ -41,6 +42,7 @@ const TableDemo = () => {
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(defaultTenantId);
     const [selectedTenantName, setSelectedTenantName] = useState<string | null>(defaultTenantName);
     const [dialogVisible, setDialogVisible] = useState(false);
+    const {myselectedTenantId, myselectedTenantName} = useTenantContext();
 
 
 
@@ -116,8 +118,14 @@ const TableDemo = () => {
             console.log("0th Tenant", response.data[0].tenantId);
     
             if (response.status === 200) {
-              setDefaultTenantId(response.data[0].tenantId);
-              setDefaultTenantName(response.data[0].tenantName);
+                if (myselectedTenantId) {
+                    setDefaultTenantId(myselectedTenantId);
+                    setDefaultTenantName(myselectedTenantName || '');
+                } else {
+                    // If myselectedTenantId is not available (first time), use the first element from the response
+                    setDefaultTenantId(response.data[0].tenantId);
+                    setDefaultTenantName(response.data[0].tenantName);
+                }
             } else {
               console.error('Error fetching data:', response);
             }
@@ -128,15 +136,15 @@ const TableDemo = () => {
     
         // Call the async function
         fetchTenants();
-      }, []);
+      }, [myselectedTenantId, myselectedTenantName]);
 
 
     useEffect(() => {
         const fetchChecklistData = async () => {
             try {
-                const response = await axios.get(`${apiBaseUrl}${apiUrls.checklists}${selectedTenantId}
+                const response = await axios.get(`${apiBaseUrl}${apiUrls.checklists}${myselectedTenantId}
             `);
-                console.log('Request URL Data:', `${apiBaseUrl}${apiUrls.checklists}${selectedTenantId}`);
+                console.log('Request URL Data:', `${apiBaseUrl}${apiUrls.checklists}${myselectedTenantId}`);
                 console.log('ResponseData:', response.data);
 
                 if (response.status === 200) {
@@ -149,7 +157,7 @@ const TableDemo = () => {
             }
         };
         fetchChecklistData();
-    }, [selectedTenantId]);
+    }, [myselectedTenantId]);
 
     console.log('ChecklistData', checklists);
 
@@ -467,10 +475,10 @@ const TableDemo = () => {
                 <div className="card">
                     <div style={{ justifyContent: 'space-between', display: 'flex' }}>
                         <h5>Checklist Summary</h5>
-                        <Button onClick={() => setDialogVisible(true)} style={{marginBottom:'15px'}}>
+                        {/* <Button onClick={() => setDialogVisible(true)} style={{marginBottom:'15px'}}>
                             <i className="pi pi-arrow-right-arrow-left"></i>
                             <span>&nbsp;&nbsp;&nbsp;{selectedTenantName}</span>
-                        </Button>
+                        </Button> */}
                     </div>
                     <DataTable
                         value={checklists}

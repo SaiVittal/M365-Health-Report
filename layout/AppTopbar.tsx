@@ -7,6 +7,8 @@ import { AppTopbarRef } from '../types/types';
 import { LayoutContext } from './context/layoutcontext';
 import { useState } from 'react';
 import TenantSwitchDialog from '../app/(main)/tenantSwitchDialog';
+import { useTenantContext } from '../app/(main)/context/page';
+import { Button } from 'primereact/button';
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const { layoutConfig, layoutState, onMenuToggle, showProfileSidebar } = useContext(LayoutContext);
@@ -15,6 +17,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const topbarmenubuttonRef = useRef(null);
     const [selectedTenantName, setSelectedTenantName] = useState<string | null>(null);
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+    const { myselectedTenantId, myselectedTenantName } = useTenantContext();
 
     const [dialogVisible, setDialogVisible] = useState(false);
 
@@ -23,7 +26,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
         topbarmenu: topbarmenuRef.current,
         topbarmenubutton: topbarmenubuttonRef.current,
         setSelectedTenantName,
-        setSelectedTenantId,
+        setSelectedTenantId
     }));
 
     return (
@@ -37,9 +40,6 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                 <i className="pi pi-bars" />
             </button>
 
-
-  
-
             {/* <button ref={topbarmenubuttonRef} type="button" className="p-link layout-topbar-menu-button layout-topbar-button" onClick={showProfileSidebar}>
                 <i className="pi pi-ellipsis-v" />
             </button> */}
@@ -48,13 +48,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                 <i className="pi pi-ellipsis-v" />
             </button>
 
-
-                      
-            {selectedTenantName && (
-                    <span className="layout-topbar-label">
-                        Selected Tenant: {selectedTenantName}
-                    </span>
-                )}
+            {selectedTenantName && <span className="layout-topbar-label">Selected Tenant: {selectedTenantName}</span>}
 
             <div ref={topbarmenuRef} className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
                 {/* <button type="button" className="p-link layout-topbar-button">
@@ -62,10 +56,22 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                     <span>Calendar</span>
                 </button> */}
 
+
+
+                <div style={{display:'flex', alignItems:'center'}}>
+                {/* {myselectedTenantName && <span className="layout-topbar-label">{myselectedTenantName}</span>}
                 <button type="button" className="p-link layout-topbar-button" onClick={() => setDialogVisible(true)}>
                     <i className="pi pi-arrow-right-arrow-left"></i>
                     <span>Switch Tenants</span>
-                </button>
+                </button> */}
+
+
+                <Button onClick={() => setDialogVisible(true)}>
+                            {' '}
+                            <i className="pi pi-arrow-right-arrow-left"></i>
+                            <span>&nbsp;&nbsp;&nbsp;{myselectedTenantName}</span>
+                        </Button>
+                </div>
 
                 <Link href="/documentation">
                     <button type="button" className="p-link layout-topbar-button">
@@ -79,9 +85,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                     <span>Profile</span>
                 </button>
 
-
-
-                <TenantSwitchDialog visible={dialogVisible} onSelectIDTenant={(tenantId)=> setSelectedTenantId(tenantId)} onSelectTenant={(tenantName) => setSelectedTenantName(tenantName)} onHide={() => setDialogVisible(false)} />
+                <TenantSwitchDialog visible={dialogVisible} onSelectIDTenant={(tenantId) => setSelectedTenantId(tenantId)} onSelectTenant={(tenantName) => setSelectedTenantName(tenantName)} onHide={() => setDialogVisible(false)} />
             </div>
         </div>
     );

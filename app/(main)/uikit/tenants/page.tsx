@@ -18,8 +18,10 @@ import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useState } from 'react';
 import type { Demo } from '../../../../types/types';
-import axios from "axios";
+import axios from 'axios';
 import { apiUrls } from '../../constants/constants';
+import { Dialog } from 'primereact/dialog';
+import EditDialogComponent from './EditDialogComponent';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -28,7 +30,7 @@ const TableDemo = () => {
     const [customers2, setCustomers2] = useState<Demo.Customer[]>([]);
     const [customers3, setCustomers3] = useState<Demo.Customer[]>([]);
     const [filters1, setFilters1] = useState<DataTableFilterMeta>({});
-    const [loading1, setLoading1] = useState(true); 
+    const [loading1, setLoading1] = useState(true);
     const [loading2, setLoading2] = useState(true);
     const [idFrozen, setIdFrozen] = useState(false);
     const [products, setProducts] = useState<Demo.Product[]>([]);
@@ -36,7 +38,15 @@ const TableDemo = () => {
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
     const [tenants, setTenants] = useState<Demo.Customer[]>([]);
-
+    const [isAddTenantDialogVisible, setIsAddTenantDialogVisible] = useState(false);
+    const [selectedRowData, setSelectedRowData] = useState<Demo.Customer | null>(null);
+    const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
+    const [editedData, setEditedData] = useState<Demo.Customer | null>(null);
+    const [newTenantData, setNewTenantData] = useState({
+        tenantName: '',
+        primaryDomain: '',
+        dateOnboarded: null
+    });
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
         { name: 'Anna Fali', image: 'annafali.png' },
@@ -52,16 +62,12 @@ const TableDemo = () => {
 
     const statuses = ['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal'];
 
-
-
-    
     const partnerRelationshipsBodyTemplate = (rowData: Demo.Customer) => {
-        if (Array.isArray(rowData.partnerRelationships)) {   
+        if (Array.isArray(rowData.partnerRelationships)) {
             return rowData.partnerRelationships.join(', ');
         }
         return rowData.partnerRelationships;
     };
-
 
     const dynamicColumns = [
         { field: 'tenantId', header: 'Tenant ID' },
@@ -69,36 +75,52 @@ const TableDemo = () => {
         { field: 'primaryDomain', header: 'Primary Domain' },
         { field: 'dateOnboarded', header: 'Date On-boarded' },
         { field: 'partnerRelationships', header: 'Partner Relationships' },
-        { field: 'edit', header: 'Edit' },
+        { field: 'edit', header: 'Action' }
     ];
 
     const actionBodyTemplate = (rowData: Demo.Customer) => {
         return (
             <React.Fragment>
                 {/* <Button label="" icon="pi pi-user-edit" onClick={() => handleEdit(rowData)} className="p-button-rounded p-button-success" /> */}
-                <i className="pi pi-pencil" onClick={() => handleEdit(rowData)} style={{cursor:'pointer'}}  />
+                <i className="pi pi-pencil" onClick={() => handleEdit(rowData)} style={{ cursor: 'pointer' }} />
             </React.Fragment>
         );
     };
 
-    const columns = dynamicColumns.map((col) => (
-        <Column
-            key={col.field}
-            field={col.field}
-            header={col.header}
-            body={col.field === 'partnerRelationships' ? partnerRelationshipsBodyTemplate : (col.field === 'edit' ? actionBodyTemplate : undefined)}
-            />
-    ));
-
+    const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} body={col.field === 'partnerRelationships' ? partnerRelationshipsBodyTemplate : col.field === 'edit' ? actionBodyTemplate : undefined} />);
 
     const clearFilter1 = () => {
         initFilters1();
     };
 
-
-
     const handleEdit = (rowData: Demo.Customer) => {
-        console.log('Edit button clicked for:', rowData);
+        setEditedData({ ...rowData });
+        setIsEditDialogVisible(true);
+    };
+    const closeEditDialog = () => {
+        setEditedData(null);
+        setIsEditDialogVisible(false);
+    };
+
+    const handleAddTenant = () => {
+        setIsAddTenantDialogVisible(true);
+    };
+
+    const hideAddTenantDialog = () => {
+        setIsAddTenantDialogVisible(false);
+    };
+
+    const handleInputChange = (e: { target: { name: any; value: any } }) => {
+        const { name, value } = e.target;
+        setNewTenantData((prevData) => ({ ...prevData, [name]: value }));
+    };
+
+    const handleDateChange = (e: { value: any }) => {
+        setNewTenantData((prevData) => ({ ...prevData, dateOnboarded: e.value }));
+    };
+
+    const handleSaveTenant = () => {
+        hideAddTenantDialog();
     };
 
     const onGlobalFilterChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,35 +161,31 @@ const TableDemo = () => {
         initFilters1();
     }, []);
 
-
-    console.log("Base Url", apiBaseUrl);
-    console.log(`${apiBaseUrl}${apiUrls.tenants}`,"Main Url")
-    
+    console.log('Base Url', apiBaseUrl);
+    console.log(`${apiBaseUrl}${apiUrls.tenants}`, 'Main Url');
 
     useEffect(() => {
         const fetchTenants = async () => {
-          try {
-            const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
-            console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
-            console.log('Response:', response.data);
-    
-            if (response.status === 200) {
-              setTenants(response.data);
-            } else {
-              console.error('Error fetching data:', response);
+            try {
+                const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
+                console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
+                console.log('Response:', response.data);
+
+                if (response.status === 200) {
+                    setTenants(response.data);
+                } else {
+                    console.error('Error fetching data:', response);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
             }
-          } catch (error) {
-            console.error('Error fetching data:', error);
-          }
         };
-    
+
         // Call the async function
         fetchTenants();
-      }, []);
+    }, []);
 
-
-      console.log("Tenants Data", tenants);
-
+    console.log('Tenants Data', tenants);
 
     const balanceTemplate = (rowData: Demo.Customer) => {
         return (
@@ -443,10 +461,10 @@ const TableDemo = () => {
         <div className="grid">
             <div className="col-12">
                 <div className="card">
-                <div style={{ justifyContent: 'space-between', display: 'flex' }}>
-                        <h5 style ={{marginTop: '10px'}}>Tenants</h5>
-                        <Button style={{marginBottom:'10px'}}>
-                          Add Tenant
+                    <div style={{ justifyContent: 'space-between', display: 'flex' }}>
+                        <h5 style={{ marginTop: '10px' }}>Tenants</h5>
+                        <Button style={{ marginBottom: '10px' }} onClick={handleAddTenant}>
+                            Add Tenant
                         </Button>
                     </div>
                     <DataTable
@@ -465,6 +483,36 @@ const TableDemo = () => {
                     >
                         {columns}
                     </DataTable>
+                    <Dialog visible={isAddTenantDialogVisible} onHide={hideAddTenantDialog} header="Add Tenant" modal>
+                        <div className="p-fluid">
+                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
+                                <label htmlFor="tenantName">Tenant Name</label>
+                                <InputText id="tenantName" name="tenantName" value={newTenantData.tenantName} onChange={handleInputChange} />
+                            </div>
+                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
+                                <label htmlFor="primaryDomain">Primary Domain</label>
+                                <InputText id="primaryDomain" name="primaryDomain" value={newTenantData.primaryDomain} onChange={handleInputChange} />
+                            </div>
+                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
+                                <label htmlFor="dateOnboarded">Date Onboarded</label>
+                                <Calendar id="dateOnboarded" name="dateOnboarded" value={newTenantData.dateOnboarded} onChange={handleDateChange} showIcon />
+                            </div>
+                        </div>
+                        <div className="p-dialog-footer" style={{ marginTop: '10px', justifyContent: 'space-between' }}>
+                            <Button label="Cancel" icon="pi pi-times" onClick={hideAddTenantDialog} className="p-button-text" />
+                            <Button label="Save" icon="pi pi-check" onClick={handleSaveTenant} />
+                        </div>
+                    </Dialog>
+
+                    {isEditDialogVisible && editedData && (
+                        <EditDialogComponent
+                            rowData={editedData}
+                            onClose={closeEditDialog}
+                            onSave={(editedData) => {
+                                closeEditDialog();
+                            }}
+                        />
+                    )}
                 </div>
             </div>
         </div>

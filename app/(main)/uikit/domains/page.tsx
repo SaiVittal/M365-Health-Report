@@ -21,6 +21,7 @@ import type { Demo } from '../../../../types/types';
 import axios from 'axios';
 import { apiUrls } from '../../constants/constants';
 import TenantSwitchDialog from '../../tenantSwitchDialog';
+import { useTenantContext } from '../../context/page';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -42,6 +43,7 @@ const TableDemo = () => {
     const [defaultTenantName, setDefaultTenantName]= useState('');
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(defaultTenantId);
     const [selectedTenantName, setSelectedTenantName] = useState<string | null>(defaultTenantName);
+    const {myselectedTenantId, myselectedTenantName} = useTenantContext();
 
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -146,8 +148,14 @@ const TableDemo = () => {
             console.log("0th Tenant", response.data[0].tenantId);
     
             if (response.status === 200) {
-              setDefaultTenantId(response.data[0].tenantId);
-              setDefaultTenantName(response.data[0].tenantName);
+                if (myselectedTenantId) {
+                    setDefaultTenantId(myselectedTenantId);
+                    setDefaultTenantName(myselectedTenantName || '');
+                } else {
+                    // If myselectedTenantId is not available (first time), use the first element from the response
+                    setDefaultTenantId(response.data[0].tenantId);
+                    setDefaultTenantName(response.data[0].tenantName);
+                }
             } else {
               console.error('Error fetching data:', response);
             }
@@ -158,16 +166,16 @@ const TableDemo = () => {
     
         // Call the async function
         fetchTenants();
-      }, []);
+      }, [myselectedTenantId, myselectedTenantName]);
 
     useEffect(() => {
         const fetchDomains = async () => {
             try {
-                const response = await axios.get(`${apiBaseUrl}${apiUrls.domains}${selectedTenantId}
+                const response = await axios.get(`${apiBaseUrl}${apiUrls.domains}${myselectedTenantId}
             `);
                 console.log(
                     'Request URL2Dataa:',
-                    `${apiBaseUrl}${apiUrls.domains}${selectedTenantId}
+                    `${apiBaseUrl}${apiUrls.domains}${myselectedTenantId}
             `
                 );
                 console.log('Response:', response.data);
@@ -182,7 +190,7 @@ const TableDemo = () => {
             }
         };
         fetchDomains();
-    }, [selectedTenantId]);
+    }, [myselectedTenantId]);
 
     const balanceTemplate = (rowData: Demo.Customer) => {
         return (
@@ -460,11 +468,11 @@ const TableDemo = () => {
                 <div className="card">
                     <div style={{ justifyContent: 'space-between', display: 'flex' }}>
                         <h5>Domains</h5>
-                        <Button onClick={() => setDialogVisible(true)}>
+                        {/* <Button onClick={() => setDialogVisible(true)}>
                             {' '}
                             <i className="pi pi-arrow-right-arrow-left"></i>
                             <span>&nbsp;&nbsp;&nbsp;{selectedTenantName}</span>
-                        </Button>
+                        </Button> */}
                     </div>
 
                     <DataTable

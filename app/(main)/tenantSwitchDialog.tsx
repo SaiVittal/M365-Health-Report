@@ -7,6 +7,8 @@ import axios from 'axios';
 import { Demo } from '../../types/demo';
 import { apiUrls } from './constants/constants';
 import { useEffect } from 'react';
+import { useTenantContext } from './context/page';
+
 
 interface TenantSwitchDialogProps {
     visible: boolean;
@@ -29,6 +31,7 @@ const TenantSwitchDialog: React.FC<TenantSwitchDialogProps> = ({ visible, onHide
     const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
     const [selectedTenantId, setSelectedTenantId] = useState<Tenant | null>(null);
     const [tenants, setTenants] = useState<Tenant[]>([]);
+    const { setSelectedTenantIdAv, setSelectedTenantNameAv } = useTenantContext();
 
     const dialogFooter = (
         <div>
@@ -39,8 +42,8 @@ const TenantSwitchDialog: React.FC<TenantSwitchDialogProps> = ({ visible, onHide
 
     const handleSwitchTenants = () => {
         console.log('Selected Tenant:', selectedTenant);
-        onSelectTenant(selectedTenant?.tenantName || null);
-        onSelectIDTenant(selectedTenant?.tenantId || null);
+        setSelectedTenantNameAv(selectedTenant?.tenantName || null);
+        setSelectedTenantIdAv(selectedTenant?.tenantId || null);
         onHide();
     };
 

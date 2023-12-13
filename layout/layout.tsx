@@ -17,6 +17,7 @@ import { LayoutContext } from "./context/layoutcontext";
 import { PrimeReactContext } from "primereact/api";
 import { ChildContainerProps, LayoutState, AppTopbarRef } from "../types/types";
 import { usePathname, useSearchParams } from "next/navigation";
+import { Provider } from 'react-redux';
 
 
 const Layout = ({ children }: ChildContainerProps) => {
@@ -146,7 +147,7 @@ const Layout = ({ children }: ChildContainerProps) => {
   return (
     <React.Fragment>
       <div className={containerClass}>
-        <AppTopbar ref={topbarRef} />
+        <AppTopbar ref={topbarRef}/>
         <div ref={sidebarRef} className="layout-sidebar">
           <AppSidebar />
         </div>

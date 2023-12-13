@@ -21,6 +21,7 @@ import type { Demo } from '../../../../types/types';
 import axios from "axios";
 import { apiUrls } from '../../constants/constants';
 import TenantSwitchDialog from '../../tenantSwitchDialog';
+import { useTenantContext } from '../../context/page';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -42,6 +43,7 @@ const TableDemo = () => {
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(defaultTenantId);
     const [selectedTenantName, setSelectedTenantName] = useState<string | null>(defaultTenantName);
     const [dialogVisible, setDialogVisible] = useState(false);
+    const {myselectedTenantId, myselectedTenantName} = useTenantContext();
 
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -153,8 +155,14 @@ const TableDemo = () => {
             console.log("0th Tenant", response.data[1].tenantId);
     
             if (response.status === 200) {
-              setDefaultTenantId(response.data[1].tenantId);
-              setDefaultTenantName(response.data[1].tenantName);
+                if (myselectedTenantId) {
+                    setDefaultTenantId(myselectedTenantId);
+                    setDefaultTenantName(myselectedTenantName || '');
+                } else {
+                    // If myselectedTenantId is not available (first time), use the first element from the response
+                    setDefaultTenantId(response.data[0].tenantId);
+                    setDefaultTenantName(response.data[0].tenantName);
+                }
             } else {
               console.error('Error fetching data:', response);
             }
@@ -165,14 +173,14 @@ const TableDemo = () => {
     
         // Call the async function
         fetchTenants();
-      }, []);
+      }, [myselectedTenantId, myselectedTenantName]);
     
 
     useEffect(() => {
         const fetchInactiveUsersLicenses = async () => {
           try {
-            const response = await axios.get(`${apiBaseUrl}${apiUrls.inactiveUsersLicenses}${selectedTenantId}`);
-            console.log('Request URL12:', `${apiBaseUrl}${apiUrls.inactiveUsersLicenses}${selectedTenantId}`);
+            const response = await axios.get(`${apiBaseUrl}${apiUrls.inactiveUsersLicenses}${myselectedTenantId}`);
+            console.log('Request URL12:', `${apiBaseUrl}${apiUrls.inactiveUsersLicenses}${myselectedTenantId}`);
             console.log('Response1223:', response.data);
     
             if (response.status === 200) {
@@ -187,7 +195,7 @@ const TableDemo = () => {
     
         // Call the async function
         fetchInactiveUsersLicenses();
-      }, [selectedTenantId]);
+      }, [myselectedTenantId]);
 
 
       console.log("InactiveData", inactiveUsersLicenses);
@@ -470,11 +478,11 @@ const TableDemo = () => {
 
                 <div style={{ justifyContent: 'space-between', display: 'flex' }}>
                         <h5>Inactive Users with Licenses</h5>
-                        <Button onClick={() => setDialogVisible(true)}>
+                        {/* <Button onClick={() => setDialogVisible(true)}>
                             {' '}
                             <i className="pi pi-arrow-right-arrow-left"></i>
                             <span>&nbsp;&nbsp;&nbsp;{selectedTenantName}</span>
-                        </Button>
+                        </Button> */}
                     </div>
                     {/* <h5>Inactive Users with Licenses</h5> */}
                     <DataTable

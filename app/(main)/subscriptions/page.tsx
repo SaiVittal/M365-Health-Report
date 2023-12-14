@@ -1,6 +1,6 @@
     'use client';
-    import { CustomerService } from '../../../../demo/service/CustomerService';
-    import { ProductService } from '../../../../demo/service/ProductService';
+    import { CustomerService } from '../../../demo/service/CustomerService';
+    import { ProductService } from '../../../demo/service/ProductService';
     import { FilterMatchMode, FilterOperator } from 'primereact/api';
     import { Button } from 'primereact/button';
     import { Calendar } from 'primereact/calendar';
@@ -17,11 +17,11 @@
     import { TriStateCheckbox } from 'primereact/tristatecheckbox';
     import { classNames } from 'primereact/utils';
     import React, { useEffect, useState } from 'react';
-    import type { Demo } from '../../../../types/types';
+    import type { Demo } from '../../../types/types';
     import axios from 'axios';
-    import { apiUrls } from '../../constants/constants';
+    import { apiUrls } from '../constants/constants';
     import { format } from 'date-fns';
-    import { useTenantContext } from '../../context/page';
+    import { useTenantContext } from '../context/page';
 
     interface SubscriptionsData {
         assigned: number;
@@ -73,7 +73,7 @@
         };
 
         const dynamicColumns = [
-            { field: 'name', header: 'Product Name' },
+            { field: 'name', header: 'Product name' },
             { field: 'assigned', header: 'Assigned licenses' },
             { field: 'purchased', header: 'Purchased quantity' },
             { field: 'status', header: 'Subscription status' }
@@ -93,7 +93,7 @@
 
         const statusBodyTemplate = (rowData: SubscriptionsData) => {
             const isActive = rowData.status === 'Enabled';
-            const icon = isActive ? <i className="pi pi-check-circle icon-green"></i> : null;
+            const icon = isActive ? <i className="pi pi-check-circle" style={{ color:'green'}}></i> : null;
             const formattedDate = rowData.expiresOn ? `: Expires On ${formatCustomDate(rowData.expiresOn)}` : '';
             return (
                 <span>

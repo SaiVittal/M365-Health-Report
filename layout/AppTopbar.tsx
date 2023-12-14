@@ -68,7 +68,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
 
                 <Button onClick={() => setDialogVisible(true)}>
                             {' '}
-                            <i className="pi pi-arrow-right-arrow-left"></i>
+                            <i className="pi pi-arrow-right-arrow-left" style={{ fontSize: '1.5rem' }}></i>
                             <span>&nbsp;&nbsp;&nbsp;{myselectedTenantName}</span>
                         </Button>
                 </div>

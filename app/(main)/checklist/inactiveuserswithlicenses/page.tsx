@@ -18,10 +18,10 @@ import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useState } from 'react';
 import type { Demo } from '../../../../types/types';
-import axios from 'axios';
+import axios from "axios";
 import { apiUrls } from '../../constants/constants';
-import { Dialog } from 'primereact/dialog';
-import EditDialogComponent from './EditDialogComponent';
+import TenantSwitchDialog from '../../tenantSwitchDialog';
+import { useTenantContext } from '../../context/page';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -30,23 +30,21 @@ const TableDemo = () => {
     const [customers2, setCustomers2] = useState<Demo.Customer[]>([]);
     const [customers3, setCustomers3] = useState<Demo.Customer[]>([]);
     const [filters1, setFilters1] = useState<DataTableFilterMeta>({});
-    const [loading1, setLoading1] = useState(true);
+    const [loading1, setLoading1] = useState(true); 
     const [loading2, setLoading2] = useState(true);
     const [idFrozen, setIdFrozen] = useState(false);
     const [products, setProducts] = useState<Demo.Product[]>([]);
     const [globalFilterValue1, setGlobalFilterValue1] = useState('');
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
-    const [tenants, setTenants] = useState<Demo.Customer[]>([]);
-    const [isAddTenantDialogVisible, setIsAddTenantDialogVisible] = useState(false);
-    const [selectedRowData, setSelectedRowData] = useState<Demo.Customer | null>(null);
-    const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
-    const [editedData, setEditedData] = useState<Demo.Customer | null>(null);
-    const [newTenantData, setNewTenantData] = useState({
-        tenantName: '',
-        primaryDomain: '',
-        dateOnboarded: null
-    });
+    const [inactiveUsersLicenses, setInactiveUsersLicenses] = useState<Demo.Customer[]>([]);
+    const [defaultTenantId, setDefaultTenantId]= useState('');
+    const [defaultTenantName, setDefaultTenantName]= useState('');
+    const [selectedTenantId, setSelectedTenantId] = useState<string | null>(defaultTenantId);
+    const [selectedTenantName, setSelectedTenantName] = useState<string | null>(defaultTenantName);
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const {myselectedTenantId, myselectedTenantName} = useTenantContext();
+
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
         { name: 'Anna Fali', image: 'annafali.png' },
@@ -62,65 +60,42 @@ const TableDemo = () => {
 
     const statuses = ['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal'];
 
-    const partnerRelationshipsBodyTemplate = (rowData: Demo.Customer) => {
-        if (Array.isArray(rowData.partnerRelationships)) {
-            return rowData.partnerRelationships.join(', ');
-        }
-        return rowData.partnerRelationships;
-    };
 
     const dynamicColumns = [
-        { field: 'tenantId', header: 'Tenant ID' },
-        { field: 'tenantName', header: 'Tenant Name' },
-        { field: 'primaryDomain', header: 'Primary Domain' },
-        { field: 'dateOnboarded', header: 'Date On-boarded' },
-        { field: 'partnerRelationships', header: 'Partner Relationships' },
-        { field: 'edit', header: 'Action' }
+        //{ field: 'userID', header: 'User ID' },
+        { field: 'displayName', header: 'Display name' },
+        { field: 'email', header: 'Username' },
+        { field: 'licenseDetails', header: 'Licenses' },
+        { field: 'lastInteractiveSignedDateTime', header: 'Last Login Interactive signed date time' },
+        { field: 'lastNonInteractiveSignedDateTime', header: 'Last Non Interactive signed date time' },
+       
+        //{ field: 'assignedLicenses', header: 'Assigned Licenses' },
     ];
 
-    const actionBodyTemplate = (rowData: Demo.Customer) => {
-        return (
-            <React.Fragment>
-                {/* <Button label="" icon="pi pi-user-edit" onClick={() => handleEdit(rowData)} className="p-button-rounded p-button-success" /> */}
-                <i className="pi pi-pencil" onClick={() => handleEdit(rowData)} style={{ cursor: 'pointer' }} />
-            </React.Fragment>
-        );
+    const assignedLicensesBodyTemplate = (rowData: { licenseDetails: any[]; }) => {
+        const assignedLicenses = rowData.licenseDetails.map((license) => license.name).join(', ');
+        return <span>{assignedLicenses}</span>;
     };
+    
 
-    const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} body={col.field === 'partnerRelationships' ? partnerRelationshipsBodyTemplate : col.field === 'edit' ? actionBodyTemplate : undefined} />);
+    const columns = dynamicColumns.map((col) => (
+        <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+            body={col.field === 'licenseDetails' ? assignedLicensesBodyTemplate : undefined}
+        />
+    ));
+
+    useEffect(() => {
+        if (defaultTenantName && defaultTenantName.trim() !== '') {
+            setSelectedTenantName(defaultTenantName);
+        }
+    }, [defaultTenantName]);
+
 
     const clearFilter1 = () => {
         initFilters1();
-    };
-
-    const handleEdit = (rowData: Demo.Customer) => {
-        setEditedData({ ...rowData });
-        setIsEditDialogVisible(true);
-    };
-    const closeEditDialog = () => {
-        setEditedData(null);
-        setIsEditDialogVisible(false);
-    };
-
-    const handleAddTenant = () => {
-        setIsAddTenantDialogVisible(true);
-    };
-
-    const hideAddTenantDialog = () => {
-        setIsAddTenantDialogVisible(false);
-    };
-
-    const handleInputChange = (e: { target: { name: any; value: any } }) => {
-        const { name, value } = e.target;
-        setNewTenantData((prevData) => ({ ...prevData, [name]: value }));
-    };
-
-    const handleDateChange = (e: { value: any }) => {
-        setNewTenantData((prevData) => ({ ...prevData, dateOnboarded: e.value }));
-    };
-
-    const handleSaveTenant = () => {
-        hideAddTenantDialog();
     };
 
     const onGlobalFilterChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,6 +119,14 @@ const TableDemo = () => {
         );
     };
 
+
+    
+    useEffect(() => {
+        if (defaultTenantId && defaultTenantId.trim() !== '') {
+            setSelectedTenantId(defaultTenantId);
+        }
+    }, [defaultTenantId]);
+
     useEffect(() => {
         setLoading2(true);
 
@@ -161,31 +144,62 @@ const TableDemo = () => {
         initFilters1();
     }, []);
 
-    console.log('Base Url', apiBaseUrl);
-    console.log(`${apiBaseUrl}${apiUrls.tenants}`, 'Main Url');
 
+    
     useEffect(() => {
         const fetchTenants = async () => {
-            try {
-                const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
-                console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
-                console.log('Response:', response.data);
-
-                if (response.status === 200) {
-                    setTenants(response.data);
+          try {
+            const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Response:', response.data);
+            console.log("0th Tenant", response.data[1].tenantId);
+    
+            if (response.status === 200) {
+                if (myselectedTenantId) {
+                    setDefaultTenantId(myselectedTenantId);
+                    setDefaultTenantName(myselectedTenantName || '');
                 } else {
-                    console.error('Error fetching data:', response);
+                    // If myselectedTenantId is not available (first time), use the first element from the response
+                    setDefaultTenantId(response.data[0].tenantId);
+                    setDefaultTenantName(response.data[0].tenantName);
                 }
-            } catch (error) {
-                console.error('Error fetching data:', error);
+            } else {
+              console.error('Error fetching data:', response);
             }
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
         };
-
+    
         // Call the async function
         fetchTenants();
-    }, []);
+      }, [myselectedTenantId, myselectedTenantName]);
+    
 
-    console.log('Tenants Data', tenants);
+    useEffect(() => {
+        const fetchInactiveUsersLicenses = async () => {
+          try {
+            const response = await axios.get(`${apiBaseUrl}${apiUrls.inactiveUsersLicenses}${myselectedTenantId}`);
+            console.log('Request URL12:', `${apiBaseUrl}${apiUrls.inactiveUsersLicenses}${myselectedTenantId}`);
+            console.log('Response1223:', response.data);
+    
+            if (response.status === 200) {
+                setInactiveUsersLicenses(response.data);
+            } else {
+              console.error('Error fetching data:', response);
+            }
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        };
+    
+        // Call the async function
+        fetchInactiveUsersLicenses();
+      }, [myselectedTenantId]);
+
+
+      console.log("InactiveData", inactiveUsersLicenses);
+
 
     const balanceTemplate = (rowData: Demo.Customer) => {
         return (
@@ -461,14 +475,18 @@ const TableDemo = () => {
         <div className="grid">
             <div className="col-12">
                 <div className="card">
-                    <div style={{ justifyContent: 'space-between', display: 'flex' }}>
-                        <h5 style={{ marginTop: '10px' }}>Tenants</h5>
-                        <Button style={{ marginBottom: '10px' }} onClick={handleAddTenant}>
-                            Add Tenant
-                        </Button>
+
+                <div style={{ justifyContent: 'space-between', display: 'flex' }}>
+                        <h5>Inactive users with licenses</h5>
+                        {/* <Button onClick={() => setDialogVisible(true)}>
+                            {' '}
+                            <i className="pi pi-arrow-right-arrow-left"></i>
+                            <span>&nbsp;&nbsp;&nbsp;{selectedTenantName}</span>
+                        </Button> */}
                     </div>
+                    {/* <h5>Inactive Users with Licenses</h5> */}
                     <DataTable
-                        value={tenants}
+                        value={inactiveUsersLicenses}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -483,36 +501,8 @@ const TableDemo = () => {
                     >
                         {columns}
                     </DataTable>
-                    <Dialog visible={isAddTenantDialogVisible} onHide={hideAddTenantDialog} header="Add Tenant" modal>
-                        <div className="p-fluid">
-                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="tenantName">Tenant Name</label>
-                                <InputText id="tenantName" name="tenantName" value={newTenantData.tenantName} onChange={handleInputChange} />
-                            </div>
-                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="primaryDomain">Primary Domain</label>
-                                <InputText id="primaryDomain" name="primaryDomain" value={newTenantData.primaryDomain} onChange={handleInputChange} />
-                            </div>
-                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="dateOnboarded">Date Onboarded</label>
-                                <Calendar id="dateOnboarded" name="dateOnboarded" value={newTenantData.dateOnboarded} onChange={handleDateChange} showIcon />
-                            </div>
-                        </div>
-                        <div className="p-dialog-footer" style={{ marginTop: '10px', justifyContent: 'space-between' }}>
-                            <Button label="Cancel" icon="pi pi-times" onClick={hideAddTenantDialog} className="p-button-text" />
-                            <Button label="Save" icon="pi pi-check" onClick={handleSaveTenant} />
-                        </div>
-                    </Dialog>
 
-                    {isEditDialogVisible && editedData && (
-                        <EditDialogComponent
-                            rowData={editedData}
-                            onClose={closeEditDialog}
-                            onSave={(editedData) => {
-                                closeEditDialog();
-                            }}
-                        />
-                    )}
+                    <TenantSwitchDialog visible={dialogVisible} onSelectIDTenant={(tenantId) => setSelectedTenantId(tenantId)} onSelectTenant={(tenantName) => setSelectedTenantName(tenantName)} onHide={() => setDialogVisible(false)} />
                 </div>
             </div>
         </div>

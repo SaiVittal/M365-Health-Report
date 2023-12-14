@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
@@ -6,7 +6,6 @@ import { Column } from 'primereact/column';
 import axios from 'axios';
 import { Demo } from '../../types/demo';
 import { apiUrls } from './constants/constants';
-import { useEffect } from 'react';
 import { useTenantContext } from './context/page';
 
 
@@ -29,7 +28,7 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const TenantSwitchDialog: React.FC<TenantSwitchDialogProps> = ({ visible, onHide, onSelectTenant, onSelectIDTenant }) => {
     const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
-    const [selectedTenantId, setSelectedTenantId] = useState<Tenant | null>(null);
+    // const [selectedTenantId, setSelectedTenantId] = useState<Tenant | null>(null);
     const [tenants, setTenants] = useState<Tenant[]>([]);
     const { setSelectedTenantIdAv, setSelectedTenantNameAv } = useTenantContext();
 

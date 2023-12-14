@@ -152,6 +152,7 @@ declare namespace Demo {
 
     //CustomerService
     type Customer = {
+        licenseDetails: any;
         partnerRelationships: any;
         partnerRelationships: any;
         id?: number;

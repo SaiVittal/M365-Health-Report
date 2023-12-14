@@ -6,15 +6,15 @@ import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Menu } from 'primereact/menu';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { ProductService } from '../../demo/service/ProductService';
-import { LayoutContext } from '../../layout/context/layoutcontext';
+import { ProductService } from '../../../demo/service/ProductService';
+import { LayoutContext } from '../../../layout/context/layoutcontext';
 import Link from 'next/link';
-import { Demo } from '../../types/types';
+import { Demo } from '../../../types/types';
 import { ChartData, ChartOptions } from 'chart.js';
-import { apiUrls } from './constants/constants';
+import { apiUrls } from '../constants/constants';
 import axios from 'axios';
 import { ProgressBar } from 'primereact/progressbar';
-import { useTenantContext } from './context/page';
+import { useTenantContext } from '../context/page';
 
 interface SecureScoreData {
     achievedPoints: number;
@@ -317,7 +317,7 @@ const Dashboard = () => {
                 </div>
             </div> */}
 
-            <div className="col-12 xl:col-10">
+            <div className="col-12 xl:col-12">
                 <div className="card">
                     <h4> Your Secure Score: {(secureScoreData as SecureScoreData).currentScore}%</h4>
                     <div className="mb-3">
@@ -336,7 +336,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="col-12 xl:col-10">
+            <div className="col-12 xl:col-12">
                 <div className="card">
                     <h5>Chart Analysis</h5>
                     <Chart type="line" data={lineData} options={lineOptions} />

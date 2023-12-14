@@ -25,9 +25,8 @@ import { useTenantContext } from '../../context/page';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const GlobalAdminData = () => {
+const TableDemo = () => {
     const [customers1, setCustomers1] = useState<Demo.Customer[]>([]);
-    const [globalAdmins, setGlobalAdmins] = useState<Demo.Customer[]>([]);
     const [customers2, setCustomers2] = useState<Demo.Customer[]>([]);
     const [customers3, setCustomers3] = useState<Demo.Customer[]>([]);
     const [filters1, setFilters1] = useState<DataTableFilterMeta>({});
@@ -38,6 +37,8 @@ const GlobalAdminData = () => {
     const [globalFilterValue1, setGlobalFilterValue1] = useState('');
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
+    const [tenants, setTenants] = useState<Demo.Customer[]>([]);
+    const [inactiveusersLogin, setInactiveusersLogin] = useState<Demo.Customer[]>([]);
     const [dialogVisible, setDialogVisible] = useState(false);
     const [defaultTenantId, setDefaultTenantId]= useState('');
     const [defaultTenantName, setDefaultTenantName]= useState('');
@@ -60,26 +61,19 @@ const GlobalAdminData = () => {
 
     const statuses = ['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal'];
 
+    const dynamicColumns = [
+        //{ field: 'userID', header: 'User ID' },
+        { field: 'displayName', header: 'Display name' },
+        { field: 'email', header: 'Username' },
+        { field: 'lastInteractiveSignedDateTime', header: 'Last Interactive Signed Date Time' },
+        { field: 'lastNonInteractiveSignedDateTime', header: 'Last NonInteractive Signed DateTime' }
+    ];
+
+    const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} />);
+
     const clearFilter1 = () => {
         initFilters1();
     };
-
-    const mapBooleanToString = (value: any) => {
-        const booleanText = value ? 'true' : 'false';
-        const booleanColor = value ? 'green' : 'red'; 
-    
-        return <span style={{ color: booleanColor }}>{booleanText}</span>;
-    };
-    
-
-    const dynamicColumns = [
-        //{ field: 'users', header: 'Users' },
-        { field: 'count', header: 'Number of Users' },
-        { field: 'hasRequiredCount', header: 'Has Required Count' },
-        { field: 'remarks', header: 'Remarks' },
-    ];
-
-    const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} body={col.field === 'hasRequiredCount' ? (rowData) => mapBooleanToString(rowData[col.field]) : undefined} />);
 
     const onGlobalFilterChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -89,19 +83,6 @@ const GlobalAdminData = () => {
         setFilters1(_filters1);
         setGlobalFilterValue1(value);
     };
-
-    
-    useEffect(() => {
-        if (defaultTenantId && defaultTenantId.trim() !== '') {
-            setSelectedTenantId(defaultTenantId);
-        }
-    }, [defaultTenantId]);
-        
-    useEffect(() => {
-        if (defaultTenantName && defaultTenantName.trim() !== '') {
-            setSelectedTenantName(defaultTenantName);
-        }
-    }, [defaultTenantName]);
 
     const renderHeader1 = () => {
         return (
@@ -114,6 +95,20 @@ const GlobalAdminData = () => {
             </div>
         );
     };
+
+
+    
+    useEffect(() => {
+        if (defaultTenantId && defaultTenantId.trim() !== '') {
+            setSelectedTenantId(defaultTenantId);
+        }
+    }, [defaultTenantId]);
+
+    useEffect(() => {
+        if (defaultTenantName && defaultTenantName.trim() !== '') {
+            setSelectedTenantName(defaultTenantName);
+        }
+    }, [defaultTenantName]);
 
     useEffect(() => {
         setLoading2(true);
@@ -138,10 +133,9 @@ const GlobalAdminData = () => {
         const fetchTenants = async () => {
           try {
             const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
-            console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Request URL14:', `${apiBaseUrl}${apiUrls.tenants}`);
             console.log('Response:', response.data);
-            console.log("0th Tenant", response.data[0].tenantId);
-            console.log("0th TenantName", response.data[0].tenantName);
+            console.log("0th Tenant", response.data[1].tenantId);
     
             if (response.status === 200) {
                 if (myselectedTenantId) {
@@ -149,8 +143,8 @@ const GlobalAdminData = () => {
                     setDefaultTenantName(myselectedTenantName || '');
                 } else {
                     // If myselectedTenantId is not available (first time), use the first element from the response
-                    setDefaultTenantId(response.data[0].tenantId);
-                    setDefaultTenantName(response.data[0].tenantName);
+                    setDefaultTenantId(response.data[1].tenantId);
+                    setDefaultTenantName(response.data[1].tenantName);
                 }
             } else {
               console.error('Error fetching data:', response);
@@ -164,33 +158,29 @@ const GlobalAdminData = () => {
         fetchTenants();
       }, [myselectedTenantId, myselectedTenantName]);
 
-      console.log("DTenant Name", selectedTenantName);
-
     useEffect(() => {
-        const fetchGlobalAdmins = async () => {
-            setLoading1(true); 
+        const fetchInactiveUsersLogin = async () => {
             try {
-                const response = await axios.get(`${apiBaseUrl}${apiUrls.globalAdmins}${myselectedTenantId}`);
-                const responseArray1 = [response];
-                console.log("Resopnse", responseArray1[0].status)
-                if (responseArray1[0].status === 200) {
-                    const responseData = responseArray1[0].data;
-                    console.log("My Data", [responseData]) 
-                    const myData = [responseData]
-                    setGlobalAdmins(myData); 
+                console.log('Fetching inactive users', `${apiBaseUrl}${apiUrls.inactiveUsers}${myselectedTenantId}`);
+                const response = await axios.get(`${apiBaseUrl}${apiUrls.inactiveUsers}${myselectedTenantId}`);
+
+                console.log('Response:', response.data);
+
+                if (response.status === 200) {
+                    setInactiveusersLogin(response.data);
                 } else {
-                    console.error('Error fetching data. Server responded with:', response.status, response.statusText);
+                    console.error('Error fetching data:', response);
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
-            } finally {
-                setLoading1(false); 
             }
         };
-    
-        fetchGlobalAdmins();
+
+        // Call the async function
+        fetchInactiveUsersLogin();
     }, [myselectedTenantId]);
-    
+
+    console.log('InactiveUsers Data', inactiveusersLogin);
 
     const balanceTemplate = (rowData: Demo.Customer) => {
         return (
@@ -467,16 +457,15 @@ const GlobalAdminData = () => {
             <div className="col-12">
                 <div className="card">
                     <div style={{ justifyContent: 'space-between', display: 'flex' }}>
-                        <h5>Global Admins </h5>
+                        <h5>Inactive Users Login Enabled</h5>
                         {/* <Button onClick={() => setDialogVisible(true)}>
                             {' '}
                             <i className="pi pi-arrow-right-arrow-left"></i>
                             <span>&nbsp;&nbsp;&nbsp;{selectedTenantName}</span>
                         </Button> */}
                     </div>
-
                     <DataTable
-                        value={globalAdmins}
+                        value={inactiveusersLogin}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -499,4 +488,4 @@ const GlobalAdminData = () => {
     );
 };
 
-export default GlobalAdminData;
+export default TableDemo;

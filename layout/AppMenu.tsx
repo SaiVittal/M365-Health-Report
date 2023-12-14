@@ -4,7 +4,7 @@ import React, { useContext } from 'react';
 import AppMenuitem from './AppMenuitem';
 import { LayoutContext } from './context/layoutcontext';
 import { MenuProvider } from './context/menucontext';
-import Link from 'next/link';
+// import Link from 'next/link';
 import { AppMenuItem } from '../types/types';
 
 const AppMenu = () => {
@@ -23,8 +23,8 @@ const AppMenu = () => {
                 // { label: 'Float Label', icon: 'pi pi-fw pi-bookmark', to: '/uikit/floatlabel' },
                 // { label: 'Invalid State', icon: 'pi pi-fw pi-exclamation-circle', to: '/uikit/invalidstate' },
                 // { label: 'Button', icon: 'pi pi-fw pi-mobile', to: '/uikit/button', class: 'rotated-icon' },
-                { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }, 
-                { label: 'Subscriptions', icon: 'pi pi-fw pi-money-bill', to: '/uikit/subscriptions' },
+                { label: 'Dashboard', icon: 'pi pi-fw pi-th-large', to: '/dashboard' }, 
+                { label: 'Subscriptions', icon: 'pi pi-fw pi-money-bill', to: '/subscriptions' },
                 // { label: 'List', icon: 'pi pi-fw pi-list', to: '/uikit/list' },
                 // { label: 'Tree', icon: 'pi pi-fw pi-share-alt', to: '/uikit/tree' },
                 // { label: 'Panel', icon: 'pi pi-fw pi-tablet', to: '/uikit/panel' },
@@ -41,27 +41,27 @@ const AppMenu = () => {
                                     {
                                         label: 'Summary',
                                         icon: 'pi pi-fw pi-info-circle',
-                                        to: '/uikit/checklists'
+                                        to: '/checklist/summary'
                                     },
                                     {
                                         label: 'Domains',
                                         icon: 'pi pi-fw pi-globe',
-                                        to: '/uikit/domains'
+                                        to: '/checklist/domains'
                                     },
                                     {
                                         label: 'Inactive Users with License',
                                         icon: 'pi pi-fw pi-user-minus',
-                                        to: '/uikit/inactiveuserswithlicenses'
+                                        to: '/checklist/inactiveuserswithlicenses'
                                     },
                                     {
                                         label: 'Inactive Users Login Enabled',
                                         icon: 'pi pi-fw pi-lock',
-                                        to: '/uikit/inactiveusersloginenabled'
+                                        to: '/checklist/inactiveusersloginenabled'
                                     },
                                     {
                                         label: 'Global Admins',
                                         icon: 'pi pi-fw pi-globe',
-                                        to: '/uikit/globalAdmins'
+                                        to: '/checklist/globalAdmins'
                                     },
                                     
                                 ]
@@ -73,10 +73,10 @@ const AppMenu = () => {
                             {
                                 label: 'Checklist Report for all Tenants',
                                 icon: 'pi pi-fw pi-chart-bar',
-                                to: '/uikit/charts'
+                                to: '/admin/checklistreportforalltenants'
                                 //to: '/auth/login'
                             },
-                            { label: 'Tenants', icon: 'pi pi-fw pi-users', to: '/uikit/tenants' },
+                            { label: 'Tenants', icon: 'pi pi-fw pi-users', to: '/admin/tenants' },
                         ]
                     },
             ]

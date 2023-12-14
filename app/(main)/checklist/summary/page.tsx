@@ -22,6 +22,7 @@ import axios from 'axios';
 import { apiUrls } from '../../constants/constants';
 import TenantSwitchDialog from '../../tenantSwitchDialog';
 import { useTenantContext } from '../../context/page';
+import Link from 'next/link';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 const TableDemo = () => {
@@ -37,14 +38,12 @@ const TableDemo = () => {
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
     const [checklists, setChecklists] = useState<Demo.Customer[]>([]);
-    const [defaultTenantId, setDefaultTenantId]= useState('');
-    const [defaultTenantName, setDefaultTenantName]= useState('');
+    const [defaultTenantId, setDefaultTenantId] = useState('');
+    const [defaultTenantName, setDefaultTenantName] = useState('');
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(defaultTenantId);
     const [selectedTenantName, setSelectedTenantName] = useState<string | null>(defaultTenantName);
     const [dialogVisible, setDialogVisible] = useState(false);
-    const {myselectedTenantId, myselectedTenantName} = useTenantContext();
-
-
+    const { myselectedTenantId, myselectedTenantName } = useTenantContext();
 
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -75,13 +74,40 @@ const TableDemo = () => {
 
     const mapStatusToString = (status: number) => {
         const statusText = status === 0 ? 'Negative' : 'Positive';
-        const statusColor = status === 0 ? 'red' : 'green'; 
+        const statusColor = status === 0 ? 'red' : 'green';
         return <span style={{ color: statusColor }}>{statusText}</span>;
     };
 
-    const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} body={col.field === 'status' ? (rowData) => mapStatusToString(rowData[col.field]) : undefined} />);
+    const columns = dynamicColumns.map((col) => {
+        if (col.field === 'title') {
+            return <Column key={col.field} field={col.field} header={col.header} body={(rowData) => <Link href={getLinkForRuleCode(rowData.ruleCode)}>{rowData[col.field]}</Link>} />;
+        }
 
+        return <Column key={col.field} field={col.field} header={col.header} body={col.field === 'status' ? (rowData) => mapStatusToString(rowData[col.field]) : undefined} />;
+    });
 
+    const getLinkForRuleCode = (ruleCode: any) => {
+        switch (ruleCode) {
+            case 'EXO-01':
+                return '/checklist/domains';
+            case 'SEC-01':
+                return '/checklist/other';
+            case 'SEC-02':
+                return '/checklist/other';
+            case 'SEC-03':
+                return '/checklist/globalAdmins';
+            case 'USR-01':
+                return '/checklist/inactiveusersloginenabled';
+            case 'USR-02':
+                return '/checklist/inactiveuserswithlicenses';
+            case 'PRD-01':
+                return '/subscriptions';
+            case 'SEC-04':
+                return '/dashboard';
+            default:
+                return '#'; // Default link for unknown ruleCode
+        }
+    };
 
     useEffect(() => {
         if (defaultTenantId && defaultTenantId.trim() !== '') {
@@ -99,7 +125,6 @@ const TableDemo = () => {
         localStorage.setItem('checklistsData', JSON.stringify(checklists));
     }, [checklists]);
 
-    
     useEffect(() => {
         const storedChecklists = localStorage.getItem('checklistsData');
         if (storedChecklists) {
@@ -107,37 +132,34 @@ const TableDemo = () => {
         }
     }, []);
 
-
-    
     useEffect(() => {
         const fetchTenants = async () => {
-          try {
-            const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
-            console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
-            console.log('Response:', response.data);
-            console.log("0th Tenant", response.data[0].tenantId);
-    
-            if (response.status === 200) {
-                if (myselectedTenantId) {
-                    setDefaultTenantId(myselectedTenantId);
-                    setDefaultTenantName(myselectedTenantName || '');
+            try {
+                const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
+                console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
+                console.log('Response:', response.data);
+                console.log('0th Tenant', response.data[0].tenantId);
+
+                if (response.status === 200) {
+                    if (myselectedTenantId) {
+                        setDefaultTenantId(myselectedTenantId);
+                        setDefaultTenantName(myselectedTenantName || '');
+                    } else {
+                        // If myselectedTenantId is not available (first time), use the first element from the response
+                        setDefaultTenantId(response.data[0].tenantId);
+                        setDefaultTenantName(response.data[0].tenantName);
+                    }
                 } else {
-                    // If myselectedTenantId is not available (first time), use the first element from the response
-                    setDefaultTenantId(response.data[0].tenantId);
-                    setDefaultTenantName(response.data[0].tenantName);
+                    console.error('Error fetching data:', response);
                 }
-            } else {
-              console.error('Error fetching data:', response);
+            } catch (error) {
+                console.error('Error fetching data:', error);
             }
-          } catch (error) {
-            console.error('Error fetching data:', error);
-          }
         };
-    
+
         // Call the async function
         fetchTenants();
-      }, [myselectedTenantId, myselectedTenantName]);
-
+    }, [myselectedTenantId, myselectedTenantName]);
 
     useEffect(() => {
         const fetchChecklistData = async () => {

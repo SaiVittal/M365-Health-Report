@@ -7,7 +7,7 @@ import type { ChartDataState, ChartOptionsState } from '../../../../types/types'
 
 const ChartDemo = () => {
     const [options, setOptions] = useState<ChartOptionsState>({});
-    const [data, setChartData] = useState<ChartDataState>({});
+    const [data, setData] = useState<ChartDataState>({});
     const { layoutConfig } = useContext(LayoutContext);
 
     useEffect(() => {
@@ -229,7 +229,7 @@ const ChartDemo = () => {
             polarOptions,
             radarOptions
         });
-        setChartData({
+        setData({
             barData,
             pieData,
             lineData,

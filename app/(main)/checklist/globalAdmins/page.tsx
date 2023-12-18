@@ -114,7 +114,7 @@ const GlobalAdminData = () => {
                 <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined onClick={clearFilter1} />
                 <span className="p-input-icon-left">
                     <i className="pi pi-search" />
-                    <InputText value={globalFilterValue1} onChange={onGlobalFilterChange1} placeholder="Keyword Search" />
+                    <InputText value={globalFilterValue1} onChange={onGlobalFilterChange1} placeholder="Search by Admin name" />
                 </span>
             </div>
         );

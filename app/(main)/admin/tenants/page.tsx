@@ -22,11 +22,12 @@ import axios from 'axios';
 import { apiUrls } from '../../constants/constants';
 import { Dialog } from 'primereact/dialog';
 import EditDialogComponent from './EditDialogComponent';
+import DeleteDialogComponent from './DeleteDialogComponent';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-
 interface Tenant {
+    isEnabled: any;
     id: string;
     authorId: string;
     authorName: string;
@@ -40,7 +41,6 @@ interface Tenant {
     primaryDomain: string;
     dateOnboarded: number;
 }
-
 
 const TableDemo = () => {
     const [customers1, setCustomers1] = useState<Demo.Customer[]>([]);
@@ -58,14 +58,15 @@ const TableDemo = () => {
     const [isAddTenantDialogVisible, setIsAddTenantDialogVisible] = useState(false);
     const [selectedRowData, setSelectedRowData] = useState<Demo.Customer | null>(null);
     const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
+    const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
     const [editedData, setEditedData] = useState<Tenant | null>(null);
     const [newTenantData, setNewTenantData] = useState({
+        tenantId: '',
         tenantName: '',
         primaryDomain: '',
-        dateOnboarded: null,
-        clientId: '',
-        clientSecret: '',
-        partnerRelationships:'',
+        deamonAppClientId: '',
+        deamonAppClientSecret: '',
+        isEnabled: true
     });
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -99,10 +100,44 @@ const TableDemo = () => {
     ];
 
     const actionBodyTemplate = (rowData: Tenant) => {
+        const handleEnableDisable = async () => {
+            try {
+                // Fetch the current tenant details
+                const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}/${rowData.tenantId}`);
+                const currentTenant = response.data;
+
+                // Clone the current tenant object to avoid mutating the original state directly
+                const updatedTenant = { ...currentTenant };
+
+                // Toggle the isEnabled status
+                updatedTenant.isEnabled = !updatedTenant.isEnabled;
+
+                // Update the backend with the new isEnabled status
+                const updateResponse = await axios.post(`${apiBaseUrl}${apiUrls.tenants}`, {
+                    isEnabled: updatedTenant.isEnabled
+                });
+
+                // Check if the update was successful
+                if (updateResponse.status === 200) {
+                    // Perform any additional actions if needed
+                    console.log('Tenant status updated successfully:', updatedTenant);
+                } else {
+                    // Handle the error, e.g., show an error message
+                    console.error('Failed to update tenant status:', updateResponse.data);
+                }
+            } catch (error) {
+                // Handle the error, e.g., show an error message
+                console.error('Error updating tenant status:', error);
+            }
+        };
+
         return (
             <React.Fragment>
                 {/* <Button label="" icon="pi pi-user-edit" onClick={() => handleEdit(rowData)} className="p-button-rounded p-button-success" /> */}
-                <i className="pi pi-pencil" onClick={() => handleEdit(rowData)} style={{ cursor: 'pointer' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '2 rem' }}>
+                    <Button label="Edit" onClick={() => handleEdit(rowData)} />
+                    <Button label={rowData.isEnabled ? 'Disable' : 'Enable'} onClick={handleEnableDisable} />
+                </div>
             </React.Fragment>
         );
     };
@@ -116,6 +151,11 @@ const TableDemo = () => {
     const handleEdit = (rowData: Tenant) => {
         setEditedData(rowData);
         setIsEditDialogVisible(true);
+    };
+
+    const handleDelete = (rowData: Tenant) => {
+        setEditedData(rowData);
+        setIsDeleteDialogVisible(true);
     };
     const closeEditDialog = () => {
         setEditedData(null);
@@ -134,14 +174,45 @@ const TableDemo = () => {
         const { name, value } = e.target;
         setNewTenantData((prevData) => ({ ...prevData, [name]: value }));
     };
+    console.log('NewTenantData', newTenantData);
 
     const handleDateChange = (e: { value: any }) => {
         setNewTenantData((prevData) => ({ ...prevData, dateOnboarded: e.value }));
     };
 
-    const handleSaveTenant = () => {
-        hideAddTenantDialog();
+    const handleSaveTenant = async () => {
+        // const newTenantId = generateGuid();
+
+        // const newTenantDataWithIdAndDate = {
+        //     ...newTenantData,
+        //     tenantId: newTenantId,
+        // };
+
+        // console.log("NewTenantData", newTenantDataWithIdAndDate);
+        console.log('NewTenantData123', newTenantData);
+
+        try {
+            const response = await axios.post(`${apiBaseUrl}${apiUrls.tenants}`, newTenantData);
+
+            if (response.status === 200) {
+                setTenants((prevTenants) => [...prevTenants, response.data]);
+                hideAddTenantDialog();
+                fetchTenants();
+            } else {
+                console.error('Error adding new tenant:', response);
+            }
+        } catch (error) {
+            console.error('Error adding new tenant:', error);
+        }
     };
+
+    // const generateGuid = () => {
+    //     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    //         const r = (Math.random() * 16) | 0;
+    //         const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    //         return v.toString(16);
+    //     });
+    // };
 
     const onGlobalFilterChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -184,6 +255,22 @@ const TableDemo = () => {
     console.log('Base Url', apiBaseUrl);
     console.log(`${apiBaseUrl}${apiUrls.tenants}`, 'Main Url');
 
+    const fetchTenants = async () => {
+        try {
+            const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
+            console.log('Response:', response.data);
+
+            if (response.status === 200) {
+                setTenants(response.data);
+            } else {
+                console.error('Error fetching data:', response);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
     useEffect(() => {
         const fetchTenants = async () => {
             try {
@@ -204,6 +291,10 @@ const TableDemo = () => {
         // Call the async function
         fetchTenants();
     }, []);
+
+    const closeDeleteDialog = () => {
+        setIsDeleteDialogVisible(false);
+    };
 
     console.log('Tenants Data', tenants);
 
@@ -498,13 +589,17 @@ const TableDemo = () => {
                         filterDisplay="menu"
                         loading={loading1}
                         responsiveLayout="scroll"
-                        emptyMessage="No customers found."
+                        emptyMessage="No tenants found."
                         header={header1}
                     >
                         {columns}
                     </DataTable>
                     <Dialog visible={isAddTenantDialogVisible} onHide={hideAddTenantDialog} header="Add Tenant" modal>
                         <div className="p-fluid">
+                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
+                                <label htmlFor="tenantId">Tenant ID</label>
+                                <InputText id="tenantId" name="tenantId" value={newTenantData.tenantId} onChange={handleInputChange} />
+                            </div>
                             <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
                                 <label htmlFor="tenantName">Tenant Name</label>
                                 <InputText id="tenantName" name="tenantName" value={newTenantData.tenantName} onChange={handleInputChange} />
@@ -518,18 +613,50 @@ const TableDemo = () => {
                                 <Calendar id="dateOnboarded" name="dateOnboarded" value={newTenantData.dateOnboarded} onChange={handleDateChange} showIcon />
                             </div> */}
 
-                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
+                            {/* <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
                                 <label htmlFor="partnerRelationships">Partner Relationships</label>
                                 <InputText id="partnerRelationships" name="partnerRelationships" value={newTenantData.partnerRelationships} onChange={handleInputChange} />
+                            </div> */}
+                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
+                                <label htmlFor="deamonAppClientId">Client ID</label>
+                                <InputText id="deamonAppClientId" name="deamonAppClientId" value={newTenantData.deamonAppClientId} onChange={handleInputChange} />
                             </div>
                             <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="clientId">Client ID</label>
-                                <InputText id="clientId" name="clientId" value={newTenantData.clientId} onChange={handleInputChange} />
+                                <label htmlFor="deamonAppClientSecret">Client Secret</label>
+                                <InputText id="deamonAppClientSecret" name="deamonAppClientSecret" value={newTenantData.deamonAppClientSecret} onChange={handleInputChange} />
                             </div>
                             <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="clientSecret">Client Secret</label>
-                                <InputText id="clientSecret" name="clientSecret" value={newTenantData.clientSecret} onChange={handleInputChange} />
+                                <label htmlFor="status">Status</label>
+                                <Dropdown
+                                    id="status"
+                                    name="status"
+                                    value={newTenantData.isEnabled}
+                                    options={[
+                                        { label: 'Enable', value: true },
+                                        { label: 'Disable', value: false }
+                                    ]}
+                                    onChange={(e) => {
+                                        const isEnabled = e.value;
+                                        setNewTenantData((prevData) => ({ ...prevData, isEnabled }));
+                                    }}
+                                    placeholder="Select Status"
+                                />
                             </div>
+                            {/* <div className="p-field" style={{ marginBottom: '20px', padding: '10px' }}>
+                                <label htmlFor="status" style={{marginBottom:'20px'}}>Status</label>
+                                <ToggleButton
+                                    id="status"
+                                    onIcon="pi pi-check"
+                                    offIcon="pi pi-times"
+                                    onLabel="Enable"
+                                    offLabel="Disable"
+                                    checked={newTenantData.isEnabled}
+                                    onChange={(e) => {
+                                        const isEnabled = e.value;
+                                        setNewTenantData((prevData) => ({ ...prevData, isEnabled }));
+                                    }}
+                                />
+                            </div> */}
                         </div>
                         <div className="p-dialog-footer" style={{ marginTop: '10px', justifyContent: 'space-between' }}>
                             <Button label="Cancel" icon="pi pi-times" onClick={hideAddTenantDialog} className="p-button-text" />
@@ -543,10 +670,11 @@ const TableDemo = () => {
                             onClose={closeEditDialog}
                             onSave={(editedData) => {
                                 closeEditDialog();
-                                // You can perform further actions with the edited data here if needed
                             }}
                         />
                     )}
+
+                    {/* <DeleteDialogComponent isVisible={isDeleteDialogVisible} onDelete={() => handleDelete(editedData)} onClose={closeDeleteDialog} /> */}
                 </div>
             </div>
         </div>

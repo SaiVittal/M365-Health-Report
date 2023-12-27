@@ -491,7 +491,7 @@ const GlobalAdminData = () => {
                         filterDisplay="menu"
                         loading={loading1}
                         responsiveLayout="scroll"
-                        emptyMessage="No customers found."
+                        emptyMessage="No admins found."
                         header={header1}
                     >
                         {columns}

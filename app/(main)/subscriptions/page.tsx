@@ -482,7 +482,7 @@
                             filterDisplay="menu"
                             loading={loading1}
                             responsiveLayout="scroll"
-                            emptyMessage="No customers found."
+                            emptyMessage="No products found."
                             header={header1}
                         >
                             {columns}

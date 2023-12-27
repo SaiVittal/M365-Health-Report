@@ -475,7 +475,7 @@ const TableDemo = () => {
                         filterDisplay="menu"
                         loading={loading1}
                         responsiveLayout="scroll"
-                        emptyMessage="No customers found."
+                        emptyMessage="No inactive users found."
                         header={header1}
                     >
                         {columns}

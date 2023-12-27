@@ -64,8 +64,8 @@ const TableDemo = () => {
         tenantId: '',
         tenantName: '',
         primaryDomain: '',
-        deamonAppClientId: '',
-        deamonAppClientSecret: '',
+        // deamonAppClientId: '',
+        // deamonAppClientSecret: '',
         isEnabled: true
     });
     const representatives = [
@@ -617,14 +617,14 @@ const TableDemo = () => {
                                 <label htmlFor="partnerRelationships">Partner Relationships</label>
                                 <InputText id="partnerRelationships" name="partnerRelationships" value={newTenantData.partnerRelationships} onChange={handleInputChange} />
                             </div> */}
-                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
+                            {/* <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
                                 <label htmlFor="deamonAppClientId">Client ID</label>
                                 <InputText id="deamonAppClientId" name="deamonAppClientId" value={newTenantData.deamonAppClientId} onChange={handleInputChange} />
-                            </div>
-                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
+                            </div> */}
+                            {/* <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
                                 <label htmlFor="deamonAppClientSecret">Client Secret</label>
                                 <InputText id="deamonAppClientSecret" name="deamonAppClientSecret" value={newTenantData.deamonAppClientSecret} onChange={handleInputChange} />
-                            </div>
+                            </div> */}
                             <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
                                 <label htmlFor="status">Status</label>
                                 <Dropdown

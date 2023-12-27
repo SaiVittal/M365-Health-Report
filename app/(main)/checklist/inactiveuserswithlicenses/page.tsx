@@ -65,7 +65,7 @@ const TableDemo = () => {
         //{ field: 'userID', header: 'User ID' },
         { field: 'displayName', header: 'Display name' },
         { field: 'email', header: 'Username' },
-        // { field: 'licenseDetails', header: 'Licenses',  body:(rowData: {licenseDetails: any}) => assignedLicensesBodyTemplate(rowData.licenseDetails)}, //body: (rowData: { hasRequiredCount: any; }) => mapBooleanToString(rowData.hasRequiredCount),
+        { field: 'licenseDetails', header: 'Licenses',  body:(rowData: {licenseDetails: any}) => assignedLicensesBodyTemplate(rowData.licenseDetails)}, //body: (rowData: { hasRequiredCount: any; }) => mapBooleanToString(rowData.hasRequiredCount),
         { field: 'isEnabled', header: 'Status', body: (rowData: {isEnabled: any}) => mapBooleanToString(rowData.isEnabled) },
         { field: 'lastInteractiveSignedDateTime', header: 'Last Login Interactive signed date time' },
         { field: 'lastNonInteractiveSignedDateTime', header: 'Last Non Interactive signed date time' },
@@ -74,8 +74,10 @@ const TableDemo = () => {
     ];
 
     
-    const assignedLicensesBodyTemplate = (rowData: { licenseDetails: any[]; }) => {
-        const assignedLicenses = rowData.licenseDetails.map((license) => license.name).join(', ');
+    const assignedLicensesBodyTemplate = (rowData: {
+        map: any; licenseDetails: any[]; 
+        }) => {
+        const assignedLicenses = rowData.map((license: { name: any; }) => license.name).join(', ');
         return <span>{assignedLicenses}</span>;
     };
     

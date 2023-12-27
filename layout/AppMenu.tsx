@@ -53,11 +53,11 @@ const AppMenu = () => {
                                         icon: 'pi pi-fw pi-user-minus',
                                         to: '/checklist/inactiveuserswithlicenses'
                                     },
-                                    {
-                                        label: 'Inactive Users Login Enabled',
-                                        icon: 'pi pi-fw pi-lock',
-                                        to: '/checklist/inactiveusersloginenabled'
-                                    },
+                                    // {
+                                    //     label: 'Inactive Users Login Enabled',
+                                    //     icon: 'pi pi-fw pi-lock',
+                                    //     to: '/checklist/inactiveusersloginenabled'
+                                    // },
                                     {
                                         label: 'Global Admins',
                                         icon: 'pi pi-fw pi-globe',

@@ -139,11 +139,11 @@ const Dashboard = () => {
             try {
                 const response = await axios.get(`${apiBaseUrl}${apiUrls.secureScore}${myselectedTenantId}`);
                 console.log('Request URL:', `${apiBaseUrl}${apiUrls.secureScore}`);
-                console.log('Response:', response.data.currentScore);
+                console.log('Response:', response.data.payLoad.currentScore);
 
                 if (response.status === 200) {
-                    const roundedScore = Number(response.data.currentScore.toFixed(2));
-                    setSecureScoreData({ ...response.data, currentScore: roundedScore });
+                    const roundedScore = Number(response.data.payLoad.currentScore.toFixed(2));
+                    setSecureScoreData({ ...response.data.payLoad, currentScore: roundedScore });
                 } else {
                     console.error('Error fetching data:', response);
                 }

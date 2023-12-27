@@ -177,9 +177,9 @@ const GlobalAdminData = () => {
             try {
                 const response = await axios.get(`${apiBaseUrl}${apiUrls.globalAdmins}${myselectedTenantId}`);
                 const responseArray1 = [response];
-                console.log("Resopnse", responseArray1[0].status)
-                if (responseArray1[0].status === 200) {
-                    const responseData = responseArray1[0].data;
+                console.log("Resopnse", responseArray1[0].data.payLoad);
+                if (responseArray1[0].status === 200 && responseArray1[0].data.hasData) {
+                    const responseData = responseArray1[0].data.payLoad;
                     console.log("My Data", [responseData]) 
                     const myData = [responseData]
                     setGlobalAdmins(myData); 

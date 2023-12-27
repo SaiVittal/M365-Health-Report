@@ -65,13 +65,15 @@ const TableDemo = () => {
         //{ field: 'userID', header: 'User ID' },
         { field: 'displayName', header: 'Display name' },
         { field: 'email', header: 'Username' },
-        { field: 'licenseDetails', header: 'Licenses' },
+        // { field: 'licenseDetails', header: 'Licenses',  body:(rowData: {licenseDetails: any}) => assignedLicensesBodyTemplate(rowData.licenseDetails)}, //body: (rowData: { hasRequiredCount: any; }) => mapBooleanToString(rowData.hasRequiredCount),
+        { field: 'isEnabled', header: 'Status', body: (rowData: {isEnabled: any}) => mapBooleanToString(rowData.isEnabled) },
         { field: 'lastInteractiveSignedDateTime', header: 'Last Login Interactive signed date time' },
         { field: 'lastNonInteractiveSignedDateTime', header: 'Last Non Interactive signed date time' },
        
         //{ field: 'assignedLicenses', header: 'Assigned Licenses' },
     ];
 
+    
     const assignedLicensesBodyTemplate = (rowData: { licenseDetails: any[]; }) => {
         const assignedLicenses = rowData.licenseDetails.map((license) => license.name).join(', ');
         return <span>{assignedLicenses}</span>;
@@ -83,9 +85,17 @@ const TableDemo = () => {
             key={col.field}
             field={col.field}
             header={col.header}
-            body={col.field === 'licenseDetails' ? assignedLicensesBodyTemplate : undefined}
+            body={col.body}
         />
     ));
+
+
+    const mapBooleanToString = (value: any) => {
+        const booleanText = value ? 'Enabled' : 'Disabled';
+        const booleanColor = value ? 'green' : 'red'; 
+    
+        return <span style={{ color: booleanColor }}>{booleanText}</span>;
+    };
 
     useEffect(() => {
         if (defaultTenantName && defaultTenantName.trim() !== '') {
@@ -181,10 +191,10 @@ const TableDemo = () => {
           try {
             const response = await axios.get(`${apiBaseUrl}${apiUrls.inactiveUsersLicenses}${myselectedTenantId}`);
             console.log('Request URL12:', `${apiBaseUrl}${apiUrls.inactiveUsersLicenses}${myselectedTenantId}`);
-            console.log('Response1223:', response.data);
+            console.log('Response1223:', response.data.payLoad);
     
-            if (response.status === 200) {
-                setInactiveUsersLicenses(response.data);
+            if (response.status === 200 && response.data.hasData) {
+                setInactiveUsersLicenses(response.data.payLoad);
             } else {
               console.error('Error fetching data:', response);
             }

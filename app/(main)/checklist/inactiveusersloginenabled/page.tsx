@@ -164,10 +164,10 @@ const TableDemo = () => {
                 console.log('Fetching inactive users', `${apiBaseUrl}${apiUrls.inactiveUsers}${myselectedTenantId}`);
                 const response = await axios.get(`${apiBaseUrl}${apiUrls.inactiveUsers}${myselectedTenantId}`);
 
-                console.log('Response:', response.data);
+                console.log('Response:', response.data.payLoad);
 
-                if (response.status === 200) {
-                    setInactiveusersLogin(response.data);
+                if (response.status === 200 && response.data.hasData) {
+                    setInactiveusersLogin(response.data.payLoad);
                 } else {
                     console.error('Error fetching data:', response);
                 }

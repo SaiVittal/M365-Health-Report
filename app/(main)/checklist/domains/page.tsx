@@ -178,10 +178,10 @@ const TableDemo = () => {
                     `${apiBaseUrl}${apiUrls.domains}${myselectedTenantId}
             `
                 );
-                console.log('Response:', response.data);
+                console.log('Response:', response.data.payLoad);
 
-                if (response.status === 200) {
-                    setDomains(response.data);
+                if (response.data.hasData  && response.status === 200 ) {
+                    setDomains(response.data.payLoad);
                 } else {
                     console.error('Error fetching data:', response);
                 }

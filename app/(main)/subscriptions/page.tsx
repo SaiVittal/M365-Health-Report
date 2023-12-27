@@ -160,7 +160,7 @@
               try {
                 const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
                 console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
-                console.log('Response:', response.data);
+                console.log('Response:', response.data.payLoad);
                 console.log("0th Tenant12", response.data[1].tenantId);
         
                 if (response.status === 200) {
@@ -190,10 +190,10 @@
                     const response = await axios.get(`${apiBaseUrl}${apiUrls.subscriptions}${myselectedTenantId}
                 `);
                     console.log('Request URL Data:', `${apiBaseUrl}${apiUrls.subscriptions}${myselectedTenantId}`);
-                    console.log('ResponseData:', response.data);
+                    console.log('ResponseData:', response.data.payLoad);
 
                     if (response.status === 200) {
-                        setSubscriptionData(response.data);
+                        setSubscriptionData(response.data.payLoad);
                     } else {
                         console.error('Error fetching data:', response);
                     }

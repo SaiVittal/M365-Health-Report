@@ -80,7 +80,17 @@ const TableDemo = () => {
 
     const columns = dynamicColumns.map((col) => {
         if (col.field === 'title') {
-            return <Column key={col.field} field={col.field} header={col.header} body={(rowData) => <Link href={getLinkForRuleCode(rowData.ruleCode)}>{rowData[col.field]}</Link>} />;
+            return (
+                <Column
+                    key={col.field}
+                    field={col.field}
+                    header={col.header}
+                    body={(rowData) => {
+                        const link = getLinkForRuleCode(rowData.ruleCode);
+                        return link !== '#' ? <Link href={link}>{rowData[col.field]}</Link> : <span>{rowData[col.field]}</span>;
+                    }}
+                />
+            );
         }
 
         return <Column key={col.field} field={col.field} header={col.header} body={col.field === 'status' ? (rowData) => mapStatusToString(rowData[col.field]) : undefined} />;
@@ -90,20 +100,20 @@ const TableDemo = () => {
         switch (ruleCode) {
             case 'EXO-01':
                 return '/checklist/domains';
-            case 'SEC-01':
-                return '/checklist/other';
-            case 'SEC-02':
-                return '/checklist/other';
+            // case 'SEC-01':
+            //     return '/checklist/other';
+            // case 'SEC-02':
+            //     return '/checklist/other';
             case 'SEC-03':
                 return '/checklist/globalAdmins';
-            case 'USR-01':
-                return '/checklist/inactiveusersloginenabled';
             case 'USR-02':
                 return '/checklist/inactiveuserswithlicenses';
             case 'PRD-01':
                 return '/subscriptions';
             case 'SEC-04':
                 return '/dashboard';
+            case 'USR-03':
+                return '/checklist/mfaStatusReport';
             default:
                 return '#'; // Default link for unknown ruleCode
         }

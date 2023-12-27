@@ -10,5 +10,6 @@ export const apiUrls = {
     subscriptions: "/api/CheckListResult/ProductDetails?tenantId=",
     enableTenant: "/api/M365Tenant/Enable",
     disableTenant:"/api/M365Tenant/Disable",
+    mfaStatus:"/api/CheckListResult/MFAStatus?tenantId="
 };
   

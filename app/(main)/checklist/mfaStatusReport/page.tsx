@@ -20,27 +20,10 @@ import React, { useEffect, useState } from 'react';
 import type { Demo } from '../../../../types/types';
 import axios from 'axios';
 import { apiUrls } from '../../constants/constants';
-import { Dialog } from 'primereact/dialog';
-import EditDialogComponent from './EditDialogComponent';
-import DeleteDialogComponent from './DeleteDialogComponent';
+import TenantSwitchDialog from '../../tenantSwitchDialog';
+import { useTenantContext } from '../../context/page';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-interface Tenant {
-    isEnabled: any;
-    id: string;
-    authorId: string;
-    authorName: string;
-    created: number;
-    editorId: string;
-    editorName: string;
-    modified: number;
-    tenantId: string;
-    tenantName: string;
-    partnerRelationships: string[];
-    primaryDomain: string;
-    dateOnboarded: number;
-}
 
 const TableDemo = () => {
     const [customers1, setCustomers1] = useState<Demo.Customer[]>([]);
@@ -54,22 +37,16 @@ const TableDemo = () => {
     const [globalFilterValue1, setGlobalFilterValue1] = useState('');
     const [expandedRows, setExpandedRows] = useState<any[] | DataTableExpandedRows>([]);
     const [allExpanded, setAllExpanded] = useState(false);
-    const [tenants, setTenants] = useState<Demo.Customer[]>([]);
-    const [isAddTenantDialogVisible, setIsAddTenantDialogVisible] = useState(false);
-    const [selectedRowData, setSelectedRowData] = useState<Demo.Customer | null>(null);
-    const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
-    const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
-    const [editedData, setEditedData] = useState<Tenant | null>(null);
-    const [confirmationVisible, setConfirmationVisible] = useState(false);
-    const [confirmationText, setConfirmationText] = useState('');
-    const [newTenantData, setNewTenantData] = useState({
-        tenantId: '',
-        tenantName: '',
-        primaryDomain: '',
-        // deamonAppClientId: '',
-        // deamonAppClientSecret: '',
-        isEnabled: true
-    });
+    const [mfaStatusData, setMFAStatusData] = useState<Demo.Customer[]>([]);
+    const [inactiveUsersLicenses, setInactiveUsersLicenses] = useState<Demo.Customer[]>([]);
+    const [notEnabledCount, setNotEnabledCount] = useState(0);
+    const [defaultTenantId, setDefaultTenantId] = useState('');
+    const [defaultTenantName, setDefaultTenantName] = useState('');
+    const [selectedTenantId, setSelectedTenantId] = useState<string | null>(defaultTenantId);
+    const [selectedTenantName, setSelectedTenantName] = useState<string | null>(defaultTenantName);
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const { myselectedTenantId, myselectedTenantName } = useTenantContext();
+
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
         { name: 'Anna Fali', image: 'annafali.png' },
@@ -85,128 +62,47 @@ const TableDemo = () => {
 
     const statuses = ['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal'];
 
-    const partnerRelationshipsBodyTemplate = (rowData: Demo.Customer) => {
-        if (Array.isArray(rowData.partnerRelationships)) {
-            return rowData.partnerRelationships.join(', ');
-        }
-        return rowData.partnerRelationships;
-    };
-
     const dynamicColumns = [
-        { field: 'tenantId', header: 'Tenant ID' },
-        { field: 'tenantName', header: 'Tenant Name' },
-        { field: 'primaryDomain', header: 'Primary Domain' },
-        { field: 'dateOnboarded', header: 'Date On-boarded' },
-        { field: 'partnerRelationships', header: 'Partner Relationships' },
-        { field: 'edit', header: 'Action' }
+        //{ field: 'userID', header: 'User ID' },
+        { field: 'displayName', header: 'Display name' },
+        { field: 'email', header: 'Email' },
+        { field: 'userID', header: 'User ID' }
+        // { field: 'licenseDetails', header: 'Licenses',  body:(rowData: {licenseDetails: any}) => assignedLicensesBodyTemplate(rowData.licenseDetails)}, //body: (rowData: { hasRequiredCount: any; }) => mapBooleanToString(rowData.hasRequiredCount),
+        // { field: 'isEnabled', header: 'Status', body: (rowData: {isEnabled: any}) => mapBooleanToString(rowData.isEnabled) },
+
+        //{ field: 'assignedLicenses', header: 'Assigned Licenses' },
     ];
 
-    const openConfirmationDialog = () => {
-        setConfirmationText('');
-        setConfirmationVisible(true);
+    const assignedLicensesBodyTemplate = (rowData: { map: any; licenseDetails: any[] }) => {
+        const assignedLicenses = rowData.map((license: { name: any }) => license.name).join(', ');
+        return <span>{assignedLicenses}</span>;
     };
 
-    const handleConfirmationInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setConfirmationText(e.target.value);
+    const columns = dynamicColumns.map((col) => (
+        <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+            // body={col.body}
+        />
+    ));
+
+    const mapBooleanToString = (value: any) => {
+        const booleanText = value ? 'Enabled' : 'Disabled';
+        const booleanColor = value ? 'green' : 'red';
+
+        return <span style={{ color: booleanColor }}>{booleanText}</span>;
     };
 
-    const handleConfirmation = async () => {
-        if (confirmationText.trim() === 'CONFIRM') {
-            // Perform the post API operation here
-            // ...
-            setConfirmationVisible(false);
-        } else {
-            // Handle incorrect confirmation text (optional)
-            // You can display an error message or take appropriate action
+    useEffect(() => {
+        if (defaultTenantName && defaultTenantName.trim() !== '') {
+            setSelectedTenantName(defaultTenantName);
         }
-    };
-
-    const actionBodyTemplate = (rowData: Tenant) => {
-        const handleEnableDisable = () => {
-            openConfirmationDialog();
-        };
-        return (
-            <React.Fragment>
-                {/* <Button label="" icon="pi pi-user-edit" onClick={() => handleEdit(rowData)} className="p-button-rounded p-button-success" /> */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                    <Button label="Edit" onClick={() => handleEdit(rowData)} />
-                    <Button label={rowData.isEnabled ? 'Disable' : 'Enable'} onClick={handleEnableDisable} />
-                </div>
-            </React.Fragment>
-        );
-    };
-
-    const columns = dynamicColumns.map((col) => <Column key={col.field} field={col.field} header={col.header} body={col.field === 'partnerRelationships' ? partnerRelationshipsBodyTemplate : col.field === 'edit' ? actionBodyTemplate : undefined} />);
+    }, [defaultTenantName]);
 
     const clearFilter1 = () => {
         initFilters1();
     };
-
-    const handleEdit = (rowData: Tenant) => {
-        setEditedData(rowData);
-        setIsEditDialogVisible(true);
-    };
-
-    const handleDelete = (rowData: Tenant) => {
-        setEditedData(rowData);
-        setIsDeleteDialogVisible(true);
-    };
-    const closeEditDialog = () => {
-        setEditedData(null);
-        setIsEditDialogVisible(false);
-    };
-
-    const handleAddTenant = () => {
-        setIsAddTenantDialogVisible(true);
-    };
-
-    const hideAddTenantDialog = () => {
-        setIsAddTenantDialogVisible(false);
-    };
-
-    const handleInputChange = (e: { target: { name: any; value: any } }) => {
-        const { name, value } = e.target;
-        setNewTenantData((prevData) => ({ ...prevData, [name]: value }));
-    };
-    console.log('NewTenantData', newTenantData);
-
-    const handleDateChange = (e: { value: any }) => {
-        setNewTenantData((prevData) => ({ ...prevData, dateOnboarded: e.value }));
-    };
-
-    const handleSaveTenant = async () => {
-        // const newTenantId = generateGuid();
-
-        // const newTenantDataWithIdAndDate = {
-        //     ...newTenantData,
-        //     tenantId: newTenantId,
-        // };
-
-        // console.log("NewTenantData", newTenantDataWithIdAndDate);
-        console.log('NewTenantData123', newTenantData);
-
-        try {
-            const response = await axios.post(`${apiBaseUrl}${apiUrls.tenants}`, newTenantData);
-
-            if (response.status === 200) {
-                setTenants((prevTenants) => [...prevTenants, response.data]);
-                hideAddTenantDialog();
-                fetchTenants();
-            } else {
-                console.error('Error adding new tenant:', response);
-            }
-        } catch (error) {
-            console.error('Error adding new tenant:', error);
-        }
-    };
-
-    // const generateGuid = () => {
-    //     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    //         const r = (Math.random() * 16) | 0;
-    //         const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    //         return v.toString(16);
-    //     });
-    // };
 
     const onGlobalFilterChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -223,11 +119,17 @@ const TableDemo = () => {
                 <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined onClick={clearFilter1} />
                 <span className="p-input-icon-left">
                     <i className="pi pi-search" />
-                    <InputText value={globalFilterValue1} onChange={onGlobalFilterChange1} placeholder="Search by Tenant name" />
+                    <InputText value={globalFilterValue1} onChange={onGlobalFilterChange1} placeholder="Search by username" />
                 </span>
             </div>
         );
     };
+
+    useEffect(() => {
+        if (defaultTenantId && defaultTenantId.trim() !== '') {
+            setSelectedTenantId(defaultTenantId);
+        }
+    }, [defaultTenantId]);
 
     useEffect(() => {
         setLoading2(true);
@@ -246,34 +148,23 @@ const TableDemo = () => {
         initFilters1();
     }, []);
 
-    console.log('Base Url', apiBaseUrl);
-    console.log(`${apiBaseUrl}${apiUrls.tenants}`, 'Main Url');
-
-    const fetchTenants = async () => {
-        try {
-            const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
-            console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
-            console.log('Response:', response.data);
-
-            if (response.status === 200) {
-                setTenants(response.data);
-            } else {
-                console.error('Error fetching data:', response);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
-
     useEffect(() => {
         const fetchTenants = async () => {
             try {
                 const response = await axios.get(`${apiBaseUrl}${apiUrls.tenants}`);
                 console.log('Request URL:', `${apiBaseUrl}${apiUrls.tenants}`);
                 console.log('Response:', response.data);
+                console.log('0th Tenant', response.data[1].tenantId);
 
                 if (response.status === 200) {
-                    setTenants(response.data);
+                    if (myselectedTenantId) {
+                        setDefaultTenantId(myselectedTenantId);
+                        setDefaultTenantName(myselectedTenantName || '');
+                    } else {
+                        // If myselectedTenantId is not available (first time), use the first element from the response
+                        setDefaultTenantId(response.data[0].tenantId);
+                        setDefaultTenantName(response.data[0].tenantName);
+                    }
                 } else {
                     console.error('Error fetching data:', response);
                 }
@@ -284,13 +175,32 @@ const TableDemo = () => {
 
         // Call the async function
         fetchTenants();
-    }, []);
+    }, [myselectedTenantId, myselectedTenantName]);
 
-    const closeDeleteDialog = () => {
-        setIsDeleteDialogVisible(false);
-    };
+    useEffect(() => {
+        const fetchMFAStatus = async () => {
+            try {
+                const response = await axios.get(`${apiBaseUrl}${apiUrls.mfaStatus}${myselectedTenantId}`);
+                console.log('Request URL12:', `${apiBaseUrl}${apiUrls.mfaStatus}${myselectedTenantId}`);
+                console.log('Response1223:', response.data.payLoad.notEnabledUsers);
+                console.log('Response12234:', response.data.payLoad.notEnabledCount);
 
-    console.log('Tenants Data', tenants);
+                if (response.status === 200 && response.data.hasData) {
+                    setMFAStatusData(response.data.payLoad.notEnabledUsers);
+                    setNotEnabledCount(response.data.payLoad.notEnabledCount);
+                } else {
+                    console.error('Error fetching data:', response);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        // Call the async function
+        fetchMFAStatus();
+    }, [myselectedTenantId]);
+
+    console.log('MFAStatusReport', mfaStatusData);
 
     const balanceTemplate = (rowData: Demo.Customer) => {
         return (
@@ -567,13 +477,24 @@ const TableDemo = () => {
             <div className="col-12">
                 <div className="card">
                     <div style={{ justifyContent: 'space-between', display: 'flex' }}>
-                        <h5 style={{ marginTop: '10px' }}>Tenants</h5>
-                        <Button style={{ marginBottom: '10px' }} onClick={handleAddTenant}>
-                            Add Tenant
-                        </Button>
+                        <h5>MFA Status Report</h5>
+                        {/* <div className="card" style={{marginBottom:'15px'}}>
+                            <div className="flex" style={{alignItems:'center'}}>
+                                <div style={{display:'flex'}}>
+                                    <span className="block text-500 font-medium">MFA not Enabled count: </span>
+                                    <span className="text-900 font-medium">&nbsp;{notEnabledCount}</span>
+                                </div>
+                            </div>
+                        </div> */}
+                        {/* <Button onClick={() => setDialogVisible(true)}>
+                            {' '}
+                            <i className="pi pi-arrow-right-arrow-left"></i>
+                            <span>&nbsp;&nbsp;&nbsp;{selectedTenantName}</span>
+                        </Button> */}
                     </div>
+                    {/* <h5>Inactive Users with Licenses</h5> */}
                     <DataTable
-                        value={tenants}
+                        value={mfaStatusData}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -583,111 +504,13 @@ const TableDemo = () => {
                         filterDisplay="menu"
                         loading={loading1}
                         responsiveLayout="scroll"
-                        emptyMessage="No tenants found."
+                        emptyMessage="No Status Report found."
                         header={header1}
                     >
                         {columns}
                     </DataTable>
-                    <Dialog visible={isAddTenantDialogVisible} onHide={hideAddTenantDialog} header="Add Tenant" modal>
-                        <div className="p-fluid">
-                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="tenantId">Tenant ID</label>
-                                <InputText id="tenantId" name="tenantId" value={newTenantData.tenantId} onChange={handleInputChange} />
-                            </div>
-                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="tenantName">Tenant Name</label>
-                                <InputText id="tenantName" name="tenantName" value={newTenantData.tenantName} onChange={handleInputChange} />
-                            </div>
-                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="primaryDomain">Primary Domain</label>
-                                <InputText id="primaryDomain" name="primaryDomain" value={newTenantData.primaryDomain} onChange={handleInputChange} />
-                            </div>
-                            {/* <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="dateOnboarded">Date Onboarded</label>
-                                <Calendar id="dateOnboarded" name="dateOnboarded" value={newTenantData.dateOnboarded} onChange={handleDateChange} showIcon />
-                            </div> */}
 
-                            {/* <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="partnerRelationships">Partner Relationships</label>
-                                <InputText id="partnerRelationships" name="partnerRelationships" value={newTenantData.partnerRelationships} onChange={handleInputChange} />
-                            </div> */}
-                            {/* <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="deamonAppClientId">Client ID</label>
-                                <InputText id="deamonAppClientId" name="deamonAppClientId" value={newTenantData.deamonAppClientId} onChange={handleInputChange} />
-                            </div> */}
-                            {/* <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="deamonAppClientSecret">Client Secret</label>
-                                <InputText id="deamonAppClientSecret" name="deamonAppClientSecret" value={newTenantData.deamonAppClientSecret} onChange={handleInputChange} />
-                            </div> */}
-                            <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="status">Status</label>
-                                <Dropdown
-                                    id="status"
-                                    name="status"
-                                    value={newTenantData.isEnabled}
-                                    options={[
-                                        { label: 'Enable', value: true },
-                                        { label: 'Disable', value: false }
-                                    ]}
-                                    onChange={(e) => {
-                                        const isEnabled = e.value;
-                                        setNewTenantData((prevData) => ({ ...prevData, isEnabled }));
-                                    }}
-                                    placeholder="Select Status"
-                                />
-                            </div>
-                            {/* <div className="p-field" style={{ marginBottom: '20px', padding: '10px' }}>
-                                <label htmlFor="status" style={{marginBottom:'20px'}}>Status</label>
-                                <ToggleButton
-                                    id="status"
-                                    onIcon="pi pi-check"
-                                    offIcon="pi pi-times"
-                                    onLabel="Enable"
-                                    offLabel="Disable"
-                                    checked={newTenantData.isEnabled}
-                                    onChange={(e) => {
-                                        const isEnabled = e.value;
-                                        setNewTenantData((prevData) => ({ ...prevData, isEnabled }));
-                                    }}
-                                />
-                            </div> */}
-                        </div>
-                        <div className="p-dialog-footer" style={{ marginTop: '10px', justifyContent: 'space-between' }}>
-                            <Button label="Cancel" icon="pi pi-times" onClick={hideAddTenantDialog} className="p-button-text" />
-                            <Button label="Save" icon="pi pi-check" onClick={handleSaveTenant} />
-                        </div>
-                    </Dialog>
-
-                    <Dialog
-                        visible={confirmationVisible}
-                        onHide={() => setConfirmationVisible(false)}
-                        header="Confirmation"
-                        modal
-                        footer={
-                            <div>
-                                <Button label="Cancel" icon="pi pi-times" onClick={() => setConfirmationVisible(false)} className="p-button-text" />
-                                <Button label="Yes" icon="pi pi-check" onClick={handleConfirmation} />
-                            </div>
-                        }
-                    >
-                        <div className="p-fluid">
-                            <div className="p-field">
-                                <label htmlFor="confirmationText">Do you really want to </label>
-                            </div>
-                        </div>
-                    </Dialog>
-
-                    {isEditDialogVisible && editedData && (
-                        <EditDialogComponent
-                            rowData={editedData}
-                            onClose={closeEditDialog}
-                            onSave={(editedData) => {
-                                closeEditDialog();
-                            }}
-                        />
-                    )}
-
-                    {/* <DeleteDialogComponent isVisible={isDeleteDialogVisible} onDelete={() => handleDelete(editedData)} onClose={closeDeleteDialog} /> */}
+                    <TenantSwitchDialog visible={dialogVisible} onSelectIDTenant={(tenantId) => setSelectedTenantId(tenantId)} onSelectTenant={(tenantName) => setSelectedTenantName(tenantName)} onHide={() => setDialogVisible(false)} />
                 </div>
             </div>
         </div>

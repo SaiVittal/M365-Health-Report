@@ -5,7 +5,7 @@ import { Dialog } from 'primereact/dialog';
 
 interface DeleteDialogProps {
     isVisible: boolean;
-    onDelete: (rowData: Tenant) => void;  
+    onDelete: () => void;  
     onClose: () => void;
 }
 
@@ -17,7 +17,7 @@ const DeleteDialogComponent: React.FC<DeleteDialogProps> = ({ isVisible, onDelet
             </div>
             <div className="p-dialog-footer">
                 <Button label="No" icon="pi pi-times" onClick={onClose} className="p-button-text" />
-                <Button label="Yes" icon="pi pi-check" onClick={() => onDelete(/* pass the necessary argument here */)} />
+                <Button label="Yes" icon="pi pi-check" />
             </div>
         </Dialog>
     );

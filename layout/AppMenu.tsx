@@ -49,9 +49,14 @@ const AppMenu = () => {
                                         to: '/checklist/domains'
                                     },
                                     {
-                                        label: 'Inactive Users with License',
+                                        label: 'Inactive users with licenses',
                                         icon: 'pi pi-fw pi-user-minus',
                                         to: '/checklist/inactiveuserswithlicenses'
+                                    },
+                                    {
+                                        label: 'MFA Status Report',
+                                        icon: 'pi pi-fw pi-lock',
+                                        to: '/checklist/mfaStatusReport'
                                     },
                                     // {
                                     //     label: 'Inactive Users Login Enabled',

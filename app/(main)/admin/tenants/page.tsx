@@ -62,6 +62,7 @@ const TableDemo = () => {
     const [editedData, setEditedData] = useState<Tenant | null>(null);
     const [confirmationVisible, setConfirmationVisible] = useState(false);
     const [confirmationText, setConfirmationText] = useState('');
+    const [statusText, setStatusText] = useState('');
     const [newTenantData, setNewTenantData] = useState({
         tenantId: '',
         tenantName: '',
@@ -111,18 +112,30 @@ const TableDemo = () => {
     };
 
     const handleConfirmation = async () => {
-        if (confirmationText.trim() === 'CONFIRM') {
-            // Perform the post API operation here
-            // ...
-            setConfirmationVisible(false);
-        } else {
-            // Handle incorrect confirmation text (optional)
-            // You can display an error message or take appropriate action
+
+        console.log("Hello");
+
+        try {
+            const response = await axios.post(`${apiBaseUrl}${apiUrls.enableTenant}`, newTenantData);
+
+            if (response.status === 200) {
+                setTenants((prevTenants) => [...prevTenants, response.data]);
+                hideAddTenantDialog();
+                fetchTenants();
+            } else {
+                console.error('Error adding new tenant:', response);
+            }
+        } catch (error) {
+            console.error('Error adding new tenant:', error);
         }
+
+
     };
 
     const actionBodyTemplate = (rowData: Tenant) => {
         const handleEnableDisable = () => {
+            const newStatusText = rowData.isEnabled ? 'Disable' : 'Enable';
+            setStatusText(newStatusText); 
             openConfirmationDialog();
         };
         return (
@@ -672,7 +685,7 @@ const TableDemo = () => {
                     >
                         <div className="p-fluid">
                             <div className="p-field">
-                                <label htmlFor="confirmationText">Do you really want to </label>
+                                <label htmlFor="confirmationText">Do you really want to {statusText} ?</label>
                             </div>
                         </div>
                     </Dialog>

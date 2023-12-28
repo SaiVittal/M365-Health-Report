@@ -75,6 +75,12 @@ const TableDemo = () => {
         // deamonAppClientSecret: '',
         isEnabled: true
     });
+
+    const [isTenantIdValid, setTenantIdValid] = useState(false);
+    const [isTenantNameValid, setTenantNameValid] = useState(false);
+    const [isPrimaryDomainValid, setPrimaryDomainValid] = useState(false);
+    const [isStatusValid, setStatusValid] = useState(false);
+
     const representatives = [
         { name: 'Amy Elsner', image: 'amyelsner.png' },
         { name: 'Anna Fali', image: 'annafali.png' },
@@ -222,6 +228,22 @@ const TableDemo = () => {
     const handleInputChange = (e: { target: { name: any; value: any } }) => {
         const { name, value } = e.target;
         setNewTenantData((prevData) => ({ ...prevData, [name]: value }));
+
+        // Added validation logic
+    switch (name) {
+        case 'tenantId':
+            setTenantIdValid(value.trim() !== '');
+            break;
+        case 'tenantName':
+            setTenantNameValid(value.trim() !== '');
+            break;
+        case 'primaryDomain':
+            setPrimaryDomainValid(value.trim() !== '');
+            break;
+        // Handle other fields as needed
+        default:
+            break;
+    }
     };
     console.log('NewTenantData', newTenantData);
 
@@ -648,14 +670,17 @@ const TableDemo = () => {
                             <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
                                 <label htmlFor="tenantId">Tenant ID</label>
                                 <InputText id="tenantId" name="tenantId" value={newTenantData.tenantId} onChange={handleInputChange} />
+                                {newTenantData.tenantId.trim() === '' && <small className="p-error">Tenant ID is required.</small>}
                             </div>
                             <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
                                 <label htmlFor="tenantName">Tenant Name</label>
                                 <InputText id="tenantName" name="tenantName" value={newTenantData.tenantName} onChange={handleInputChange} />
+                                {newTenantData.tenantName.trim() === '' && <small className="p-error">Tenant Name is required.</small>}
                             </div>
                             <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
                                 <label htmlFor="primaryDomain">Primary Domain</label>
                                 <InputText id="primaryDomain" name="primaryDomain" value={newTenantData.primaryDomain} onChange={handleInputChange} />
+                                {newTenantData.primaryDomain.trim() === '' && <small className="p-error">Primary Domain is required.</small>}
                             </div>
                             {/* <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
                                 <label htmlFor="dateOnboarded">Date Onboarded</label>
@@ -687,6 +712,10 @@ const TableDemo = () => {
                                     onChange={(e) => {
                                         const isEnabled = e.value;
                                         setNewTenantData((prevData) => ({ ...prevData, isEnabled }));
+
+                                        // Add validation logic
+                                        setStatusValid(true); // Assuming that the status dropdown always has a value
+
                                     }}
                                     placeholder="Select Status"
                                 />
@@ -709,7 +738,13 @@ const TableDemo = () => {
                         </div>
                         <div className="p-dialog-footer" style={{ marginTop: '10px', justifyContent: 'space-between' }}>
                             <Button label="Cancel" icon="pi pi-times" onClick={hideAddTenantDialog} className="p-button-text" />
-                            <Button label="Save" icon="pi pi-check" onClick={handleSaveTenant} />
+                            <Button label="Save" icon="pi pi-check" onClick={handleSaveTenant} 
+                              disabled={
+                                !isTenantIdValid ||
+                                !isTenantNameValid ||
+                                !isPrimaryDomainValid ||
+                                !isStatusValid
+                            } />
                         </div>
                     </Dialog>
 

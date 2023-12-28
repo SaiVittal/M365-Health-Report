@@ -66,7 +66,7 @@ const TableDemo = () => {
         //{ field: 'userID', header: 'User ID' },
         { field: 'displayName', header: 'Display name' },
         { field: 'email', header: 'Email' },
-        { field: 'userID', header: 'User ID' }
+        //{ field: 'userID', header: 'User ID' }
         // { field: 'licenseDetails', header: 'Licenses',  body:(rowData: {licenseDetails: any}) => assignedLicensesBodyTemplate(rowData.licenseDetails)}, //body: (rowData: { hasRequiredCount: any; }) => mapBooleanToString(rowData.hasRequiredCount),
         // { field: 'isEnabled', header: 'Status', body: (rowData: {isEnabled: any}) => mapBooleanToString(rowData.isEnabled) },
 

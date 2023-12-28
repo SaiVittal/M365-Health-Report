@@ -49,7 +49,7 @@ const AppMenu = () => {
                                         to: '/checklist/domains'
                                     },
                                     {
-                                        label: 'Inactive users with licenses',
+                                        label: 'Inactive users',
                                         icon: 'pi pi-fw pi-user-minus',
                                         to: '/checklist/inactiveuserswithlicenses'
                                     },

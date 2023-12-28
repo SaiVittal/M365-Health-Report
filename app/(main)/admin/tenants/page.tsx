@@ -218,6 +218,12 @@ const TableDemo = () => {
     };
 
     const handleAddTenant = () => {
+        setNewTenantData({
+            tenantId: '',
+            tenantName: '',
+            primaryDomain: '',
+            isEnabled: true
+        });
         setIsAddTenantDialogVisible(true);
     };
 
@@ -665,20 +671,22 @@ const TableDemo = () => {
                     >
                         {columns}
                     </DataTable>
+
+                    
                     <Dialog visible={isAddTenantDialogVisible} onHide={hideAddTenantDialog} header="Add Tenant" modal>
                         <div className="p-fluid">
                             <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="tenantId">Tenant ID</label>
+                                <label htmlFor="tenantId">Tenant ID<span style={{ color: 'red' }}>&nbsp;*</span></label>
                                 <InputText id="tenantId" name="tenantId" value={newTenantData.tenantId} onChange={handleInputChange} />
                                 {newTenantData.tenantId.trim() === '' && <small className="p-error">Tenant ID is required.</small>}
                             </div>
                             <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="tenantName">Tenant Name</label>
+                                <label htmlFor="tenantName">Tenant Name<span style={{ color: 'red' }}>&nbsp;*</span></label>
                                 <InputText id="tenantName" name="tenantName" value={newTenantData.tenantName} onChange={handleInputChange} />
                                 {newTenantData.tenantName.trim() === '' && <small className="p-error">Tenant Name is required.</small>}
                             </div>
                             <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="primaryDomain">Primary Domain</label>
+                                <label htmlFor="primaryDomain">Primary Domain<span style={{ color: 'red' }}>&nbsp;*</span></label>
                                 <InputText id="primaryDomain" name="primaryDomain" value={newTenantData.primaryDomain} onChange={handleInputChange} />
                                 {newTenantData.primaryDomain.trim() === '' && <small className="p-error">Primary Domain is required.</small>}
                             </div>
@@ -700,7 +708,7 @@ const TableDemo = () => {
                                 <InputText id="deamonAppClientSecret" name="deamonAppClientSecret" value={newTenantData.deamonAppClientSecret} onChange={handleInputChange} />
                             </div> */}
                             <div className="p-field" style={{ marginBottom: '10px', padding: '10px' }}>
-                                <label htmlFor="status">Status</label>
+                                <label htmlFor="status">Status<span style={{ color: 'red' }}>&nbsp;*</span></label>
                                 <Dropdown
                                     id="status"
                                     name="status"

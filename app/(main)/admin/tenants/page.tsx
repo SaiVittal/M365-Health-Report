@@ -63,6 +63,10 @@ const TableDemo = () => {
     const [confirmationVisible, setConfirmationVisible] = useState(false);
     const [confirmationText, setConfirmationText] = useState('');
     const [statusText, setStatusText] = useState('');
+    const [selectedTenantId, setSelectedTenantId] = useState('');
+    const [enableDisableData, setEnableDisableData] = useState({
+        isEnabled: false
+    })
     const [newTenantData, setNewTenantData] = useState({
         tenantId: '',
         tenantName: '',
@@ -107,35 +111,73 @@ const TableDemo = () => {
         setConfirmationVisible(true);
     };
 
-    const handleConfirmationInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setConfirmationText(e.target.value);
-    };
 
     const handleConfirmation = async () => {
+        console.log('Hello');
+        console.log(statusText, 'Current Status');
+        console.log('Selected Tenant ID123:', selectedTenantId);
 
-        console.log("Hello");
+        if (statusText === 'Enable') {
+            try {
+                const data = {isEnabled:true};
+                const response = await axios.post(`${apiBaseUrl}${apiUrls.enableTenant}${selectedTenantId}`, data);
 
-        try {
-            const response = await axios.post(`${apiBaseUrl}${apiUrls.enableTenant}`, newTenantData);
-
-            if (response.status === 200) {
-                setTenants((prevTenants) => [...prevTenants, response.data]);
-                hideAddTenantDialog();
-                fetchTenants();
-            } else {
-                console.error('Error adding new tenant:', response);
+                if(response.status === 200){
+                    console.log(`Tenant with ID ${selectedTenantId} has been enabled.`);
+                    setStatusText('Disable');
+                    fetchTenants();
+                }
             }
-        } catch (error) {
-            console.error('Error adding new tenant:', error);
+            catch (error) {
+                    console.error('Error Enabling tenant:', error);
+                }
+        } else if(statusText === 'Disable'){
+            try {
+            const data = {isEnabled:false};
+                const response = await axios.post(`${apiBaseUrl}${apiUrls.disableTenant}${selectedTenantId}`, data);
+
+                if(response.status === 200){
+                    console.log(`Tenant with ID ${selectedTenantId} has been disabled.`);
+                    setStatusText('Enable');
+                    fetchTenants();
+                }
         }
+        catch (error) {
+            console.error('Error Disabling tenant:', error);
+        }
+    }
+        
+        // try {
+        //     const response = await axios.post(`${apiBaseUrl}${apiUrls.enableTenant}`, newTenantData);
 
+        //     if (response.status === 200) {
+        //         setTenants((prevTenants) => [...prevTenants, response.data]);
+        //         hideAddTenantDialog();
+        //         fetchTenants();
+        //     } else {
+        //         console.error('Error adding new tenant:', response);
+        //     }
+        // } catch (error) {
+        //     console.error('Error adding new tenant:', error);
+        // }
 
+        setConfirmationVisible(false);
     };
 
     const actionBodyTemplate = (rowData: Tenant) => {
-        const handleEnableDisable = () => {
+        const handleEnableDisable = (tenantId: string, isEnabled: boolean) => {
+            console.log('Tenant ID:', tenantId);
+            console.log('Is Enabled:', isEnabled);
+            setSelectedTenantId(tenantId);
             const newStatusText = rowData.isEnabled ? 'Disable' : 'Enable';
-            setStatusText(newStatusText); 
+            setStatusText(newStatusText);
+            setConfirmationText(`Do you really want to ${newStatusText} the selected tenant?`);
+            setNewTenantData({
+                tenantId: tenantId,
+                tenantName: '',
+                primaryDomain: '',
+                isEnabled: isEnabled
+            });
             openConfirmationDialog();
         };
         return (
@@ -143,7 +185,7 @@ const TableDemo = () => {
                 {/* <Button label="" icon="pi pi-user-edit" onClick={() => handleEdit(rowData)} className="p-button-rounded p-button-success" /> */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
                     <Button label="Edit" onClick={() => handleEdit(rowData)} />
-                    <Button label={rowData.isEnabled ? 'Disable' : 'Enable'} onClick={handleEnableDisable} />
+                    <Button label={rowData.isEnabled ? 'Disable' : 'Enable'} onClick={() => handleEnableDisable(rowData.tenantId, rowData.isEnabled)} />
                 </div>
             </React.Fragment>
         );
@@ -685,7 +727,7 @@ const TableDemo = () => {
                     >
                         <div className="p-fluid">
                             <div className="p-field">
-                                <label htmlFor="confirmationText">Do you really want to {statusText} ?</label>
+                                <label htmlFor="confirmationText">Do you really want to {statusText} the selected Tenant?</label>
                             </div>
                         </div>
                     </Dialog>

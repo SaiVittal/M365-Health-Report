@@ -8,8 +8,8 @@ export const apiUrls = {
     inactiveUsers:"/api/CheckListResult/InactiveUsers?tenantId=",
     secureScore: '/api/CheckListResult/SecuritySecores?tenantId=',
     subscriptions: "/api/CheckListResult/ProductDetails?tenantId=",
-    enableTenant: "/api/M365Tenant/Enable",
-    disableTenant:"/api/M365Tenant/Disable",
+    enableTenant: "/api/M365Tenant/Enable?id=",
+    disableTenant:"/api/M365Tenant/Disable?id=",
     mfaStatus:"/api/CheckListResult/MFAStatus?tenantId="
 };
   

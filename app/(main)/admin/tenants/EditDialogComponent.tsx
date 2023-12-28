@@ -58,6 +58,7 @@ const EditDialogComponent: React.FC<EditDialogComponentProps> = ({ rowData, onCl
             console.error('Error fetching data:', error);
         }
     };
+    console.log(tenants, "TenantsData")
 
 
     useEffect(() => {
@@ -105,7 +106,7 @@ const EditDialogComponent: React.FC<EditDialogComponentProps> = ({ rowData, onCl
             // Call the fetch function
             fetchTenantDetails();
         }
-    }, [rowData]);
+    }, [rowData, tenants]);
 
 
     useEffect(() => {
@@ -127,12 +128,6 @@ const EditDialogComponent: React.FC<EditDialogComponentProps> = ({ rowData, onCl
     console.log("TenantId", editedData.tenantId);
     console.log("EditedTenantData", editedData)
 
-
-    const handleSaveWithFetch = () => {
-        handleSave();
-        fetchTenants();
-    };
-
     const handleSave = async () => {
         // Implement your save logic here
         const { tenantId, tenantName, isEnabled, primaryDomain } = editedData;
@@ -140,10 +135,11 @@ const EditDialogComponent: React.FC<EditDialogComponentProps> = ({ rowData, onCl
         console.log("DataToSave", dataToSave);
         try {
             const response = await axios.post(`${apiBaseUrl}${apiUrls.tenants}`, dataToSave);
-            
             if (response.status === 200) {
-                onSave(editedData);
+                console.log("Tenant details got edited")
+                setTenants((prevTenants) => [...prevTenants, response.data]);
                 onClose();
+                fetchTenants();
             } else {
                 console.error('Failed to update tenant details:', response.data);
             }
@@ -198,7 +194,7 @@ const EditDialogComponent: React.FC<EditDialogComponentProps> = ({ rowData, onCl
             </div>
             <div className="p-dialog-footer">
                 <Button label="Cancel" icon="pi pi-times" onClick={onClose} />
-                <Button label="Save" icon="pi pi-check" onClick={handleSaveWithFetch} />
+                <Button label="Save" icon="pi pi-check" onClick={handleSave} />
             </div>
         </Dialog>
     );

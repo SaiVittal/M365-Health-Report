@@ -489,7 +489,7 @@ const TableDemo = () => {
                 <div className="card">
 
                 <div style={{ justifyContent: 'space-between', display: 'flex' }}>
-                        <h5>Inactive users with licenses</h5>
+                        <h5>Inactive users</h5>
                         {/* <Button onClick={() => setDialogVisible(true)}>
                             {' '}
                             <i className="pi pi-arrow-right-arrow-left"></i>

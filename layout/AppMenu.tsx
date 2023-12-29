@@ -24,7 +24,7 @@ const AppMenu = () => {
                 // { label: 'Invalid State', icon: 'pi pi-fw pi-exclamation-circle', to: '/uikit/invalidstate' },
                 // { label: 'Button', icon: 'pi pi-fw pi-mobile', to: '/uikit/button', class: 'rotated-icon' },
                 { label: 'Dashboard', icon: 'pi pi-fw pi-th-large', to: '/dashboard' }, 
-                { label: 'Subscriptions', icon: 'pi pi-fw pi-money-bill', to: '/subscriptions' },
+                { label: 'Subscriptions', icon: 'pi pi-fw pi-tags', to: '/subscriptions' },
                 // { label: 'List', icon: 'pi pi-fw pi-list', to: '/uikit/list' },
                 // { label: 'Tree', icon: 'pi pi-fw pi-share-alt', to: '/uikit/tree' },
                 // { label: 'Panel', icon: 'pi pi-fw pi-tablet', to: '/uikit/panel' },
@@ -65,7 +65,7 @@ const AppMenu = () => {
                                     // },
                                     {
                                         label: 'Global Admins',
-                                        icon: 'pi pi-fw pi-globe',
+                                        icon: 'pi pi-fw pi-id-card',
                                         to: '/checklist/globalAdmins'
                                     },
                                     

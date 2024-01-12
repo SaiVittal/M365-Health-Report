@@ -9,7 +9,6 @@ const ChartDemo = () => {
     const [options, setOptions] = useState<ChartOptionsState>({});
     const [data, setData] = useState<ChartDataState>({});
     const { layoutConfig } = useContext(LayoutContext);
-
     useEffect(() => {
         const documentStyle = getComputedStyle(document.documentElement);
         const textColor = documentStyle.getPropertyValue('--text-color') || '#495057';
